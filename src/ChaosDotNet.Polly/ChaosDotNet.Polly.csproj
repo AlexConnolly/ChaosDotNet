@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Polly support for ChaosDotNet: add a chaos timeline to any Polly v8 resilience pipeline with AddChaosTimeline(factory).</Description>
+    <PackageTags>$(PackageTags);polly;resilience-pipeline</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChaosDotNet\ChaosDotNet.csproj" />
+    <PackageReference Include="Polly.Core" />
+  </ItemGroup>
+
+</Project>

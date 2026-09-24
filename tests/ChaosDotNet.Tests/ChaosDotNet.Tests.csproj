@@ -9,6 +9,7 @@
     <ProjectReference Include="..\..\src\ChaosDotNet.Redis\ChaosDotNet.Redis.csproj" />
     <ProjectReference Include="..\..\src\ChaosDotNet.Caching\ChaosDotNet.Caching.csproj" />
     <ProjectReference Include="..\..\src\ChaosDotNet.AzureServiceBus\ChaosDotNet.AzureServiceBus.csproj" />
+    <ProjectReference Include="..\..\src\ChaosDotNet.Polly\ChaosDotNet.Polly.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
     <PackageReference Include="Npgsql" VersionOverride="10.0.3" />
     <PackageReference Include="StackExchange.Redis" VersionOverride="3.3.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Polly.Core" VersionOverride="8.8.0" />
   </ItemGroup>
 
 </Project>
