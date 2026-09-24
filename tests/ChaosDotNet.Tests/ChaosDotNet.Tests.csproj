@@ -2,6 +2,18 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ChaosDotNet\ChaosDotNet.csproj" />
+    <ProjectReference Include="..\..\src\ChaosDotNet.Sql\ChaosDotNet.Sql.csproj" />
+    <ProjectReference Include="..\..\src\ChaosDotNet.SqlServer\ChaosDotNet.SqlServer.csproj" />
+    <ProjectReference Include="..\..\src\ChaosDotNet.Npgsql\ChaosDotNet.Npgsql.csproj" />
+    <ProjectReference Include="..\..\src\ChaosDotNet.EntityFrameworkCore\ChaosDotNet.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Data.SqlClient" VersionOverride="7.1.0" />
+    <PackageReference Include="Npgsql" VersionOverride="10.0.3" />
   </ItemGroup>
 
 </Project>

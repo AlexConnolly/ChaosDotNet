@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace ChaosDotNet;
 
 /// <summary>
@@ -14,6 +16,7 @@ public sealed class ChaosEngine
     private readonly List<ChaosEvent> _log = [];
     private readonly Random _random;
     private readonly ChaosScenario? _scenario;
+    private readonly ConditionalWeakTable<Exception, object> _injected = [];
 
     private DateTimeOffset? _startedAt;
     private int _index;
@@ -173,7 +176,9 @@ public sealed class ChaosEngine
                 await DelayAsync(NextJitter(jitter), cancellationToken).ConfigureAwait(false);
                 return null;
             case FailFault fail:
-                throw fail.CreateException(call);
+                var exception = fail.CreateException(call);
+                _injected.AddOrUpdate(exception, fail);
+                throw exception;
             default:
                 return decision.Fault;
         }
@@ -189,8 +194,89 @@ public sealed class ChaosEngine
     /// <summary>Records that a call reached the real client and succeeded.</summary>
     public void CallSucceeded(ChaosCall call) => Record(ChaosEventKind.CallSucceeded, call, null);
 
-    /// <summary>Records that a call reached the real client and the real client threw.</summary>
-    public void CallFailed(ChaosCall call, Exception exception) => Record(ChaosEventKind.CallFailed, call, exception);
+    /// <summary>
+    /// Records that a call reached the real client and the real client threw.
+    /// Exceptions that the engine injected itself are ignored, so wrappers can report every failure.
+    /// </summary>
+    public void CallFailed(ChaosCall call, Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+        if (!_injected.TryGetValue(exception, out _))
+        {
+            Record(ChaosEventKind.CallFailed, call, exception);
+        }
+    }
+
+    /// <summary>Runs a synchronous real call through the timeline.</summary>
+    public void Run(ChaosCall call, Action realCall)
+    {
+        ArgumentNullException.ThrowIfNull(realCall);
+        Run(call, () =>
+        {
+            realCall();
+            return true;
+        });
+    }
+
+    /// <summary>Runs a synchronous real call through the timeline and returns its result.</summary>
+    public T Run<T>(ChaosCall call, Func<T> realCall)
+    {
+        ArgumentNullException.ThrowIfNull(realCall);
+        var fault = BeforeCall(call);
+        if (fault is not null)
+        {
+            throw Unsupported(fault);
+        }
+
+        try
+        {
+            var result = realCall();
+            CallSucceeded(call);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            CallFailed(call, ex);
+            throw;
+        }
+    }
+
+    /// <summary>Runs an asynchronous real call through the timeline.</summary>
+    public async Task RunAsync(ChaosCall call, Func<Task> realCall, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(realCall);
+        await RunAsync(call, async () =>
+        {
+            await realCall().ConfigureAwait(false);
+            return true;
+        }, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Runs an asynchronous real call through the timeline and returns its result.</summary>
+    public async Task<T> RunAsync<T>(ChaosCall call, Func<Task<T>> realCall, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(realCall);
+        var fault = await BeforeCallAsync(call, cancellationToken).ConfigureAwait(false);
+        if (fault is not null)
+        {
+            throw Unsupported(fault);
+        }
+
+        try
+        {
+            var result = await realCall().ConfigureAwait(false);
+            CallSucceeded(call);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            CallFailed(call, ex);
+            throw;
+        }
+    }
+
+    private static NotSupportedException Unsupported(Fault fault) =>
+        new($"The fault '{fault.Name}' is not supported by this veneer.");
 
     private void Record(ChaosEventKind kind, ChaosCall call, Exception? exception)
     {

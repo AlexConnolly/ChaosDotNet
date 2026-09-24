@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>PostgreSQL faults for ChaosDotNet: real PostgresException and NpgsqlException instances (deadlock, serialization failure, admin shutdown and more) for SqlFactory windows.</Description>
+    <PackageTags>$(PackageTags);postgres;postgresql;npgsql</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChaosDotNet\ChaosDotNet.csproj" />
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+
+</Project>

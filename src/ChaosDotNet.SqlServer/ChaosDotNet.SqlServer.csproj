@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>SQL Server faults for ChaosDotNet: real SqlException instances (deadlock, timeout, database unavailable and other transient errors) for SqlFactory windows.</Description>
+    <PackageTags>$(PackageTags);sqlserver;sqlclient</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChaosDotNet\ChaosDotNet.csproj" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+  </ItemGroup>
+
+</Project>

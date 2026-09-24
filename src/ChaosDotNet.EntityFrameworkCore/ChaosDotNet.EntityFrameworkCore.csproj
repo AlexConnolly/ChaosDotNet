@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>EF Core support for ChaosDotNet: SqlFactory.CreateInterceptor() makes an interceptor that applies the chaos timeline to connection opens, commands and commits.</Description>
+    <PackageTags>$(PackageTags);efcore;entityframeworkcore</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChaosDotNet.Sql\ChaosDotNet.Sql.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+  </ItemGroup>
+
+</Project>

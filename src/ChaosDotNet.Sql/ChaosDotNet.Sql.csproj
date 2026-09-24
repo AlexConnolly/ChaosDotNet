@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>SqlFactory for ChaosDotNet: DbConnection and DbDataSource veneers that follow a chaos timeline. Works with ADO.NET, Dapper and any provider.</Description>
+    <PackageTags>$(PackageTags);ado.net;sql;dapper</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChaosDotNet\ChaosDotNet.csproj" />
+  </ItemGroup>
+
+</Project>
