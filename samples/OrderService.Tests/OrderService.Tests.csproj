@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OrderService\OrderService.csproj" />
+    <ProjectReference Include="..\..\src\ChaosDotNet\ChaosDotNet.csproj" />
+    <ProjectReference Include="..\..\src\ChaosDotNet.EntityFrameworkCore\ChaosDotNet.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\ChaosDotNet.SqlServer\ChaosDotNet.SqlServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.Data.SqlClient" VersionOverride="7.1.0" />
+    <PackageReference Include="xunit.v3" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

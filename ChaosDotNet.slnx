@@ -1,4 +1,11 @@
 <Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/ChaosDotNet.Benchmarks/ChaosDotNet.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/OrderService.Tests/OrderService.Tests.csproj" />
+    <Project Path="samples/OrderService/OrderService.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/ChaosDotNet.AzureServiceBus/ChaosDotNet.AzureServiceBus.csproj" />
     <Project Path="src/ChaosDotNet.Caching/ChaosDotNet.Caching.csproj" />
@@ -11,6 +18,7 @@
     <Project Path="src/ChaosDotNet/ChaosDotNet.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/ChaosDotNet.IntegrationTests/ChaosDotNet.IntegrationTests.csproj" />
     <Project Path="tests/ChaosDotNet.Tests/ChaosDotNet.Tests.csproj" />
   </Folder>
 </Solution>
