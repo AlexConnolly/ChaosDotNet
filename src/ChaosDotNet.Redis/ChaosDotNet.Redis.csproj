@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>RedisFactory for ChaosDotNet: IConnectionMultiplexer veneers whose databases and subscribers follow a chaos timeline, with real RedisTimeoutException and RedisConnectionException faults.</Description>
+    <PackageTags>$(PackageTags);redis;stackexchange.redis</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChaosDotNet\ChaosDotNet.csproj" />
+    <PackageReference Include="StackExchange.Redis" />
+  </ItemGroup>
+
+</Project>

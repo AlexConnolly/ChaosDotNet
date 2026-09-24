@@ -6,6 +6,8 @@
     <ProjectReference Include="..\..\src\ChaosDotNet.SqlServer\ChaosDotNet.SqlServer.csproj" />
     <ProjectReference Include="..\..\src\ChaosDotNet.Npgsql\ChaosDotNet.Npgsql.csproj" />
     <ProjectReference Include="..\..\src\ChaosDotNet.EntityFrameworkCore\ChaosDotNet.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\ChaosDotNet.Redis\ChaosDotNet.Redis.csproj" />
+    <ProjectReference Include="..\..\src\ChaosDotNet.Caching\ChaosDotNet.Caching.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -14,6 +16,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.Data.SqlClient" VersionOverride="7.1.0" />
     <PackageReference Include="Npgsql" VersionOverride="10.0.3" />
+    <PackageReference Include="StackExchange.Redis" VersionOverride="3.3.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
   </ItemGroup>
 
 </Project>

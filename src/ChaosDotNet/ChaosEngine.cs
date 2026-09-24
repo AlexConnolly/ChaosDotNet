@@ -329,7 +329,7 @@ public sealed class ChaosEngine
                     break;
             }
 
-            if (segment.When is not null && !segment.When(call))
+            if ((segment.When is not null && !segment.When(call)) || !segment.Fault!.AppliesTo(call))
             {
                 return default;
             }

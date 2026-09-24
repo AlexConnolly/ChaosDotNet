@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>CacheFactory for ChaosDotNet: IDistributedCache veneers that follow a chaos timeline, with timeout, failure and forced-miss faults.</Description>
+    <PackageTags>$(PackageTags);cache;distributedcache</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChaosDotNet\ChaosDotNet.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+  </ItemGroup>
+
+</Project>

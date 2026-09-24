@@ -10,6 +10,12 @@ public abstract class Fault
     /// <summary>A short name for the fault, used in the log.</summary>
     public abstract string Name { get; }
 
+    /// <summary>
+    /// Whether the fault can apply to a call. Calls it cannot apply to pass through and do not count towards the window.
+    /// For example, a cache miss applies only to reads.
+    /// </summary>
+    public virtual bool AppliesTo(ChaosCall call) => true;
+
     /// <inheritdoc />
     public override string ToString() => Name;
 }

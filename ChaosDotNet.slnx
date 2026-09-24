@@ -1,7 +1,9 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/ChaosDotNet.Caching/ChaosDotNet.Caching.csproj" />
     <Project Path="src/ChaosDotNet.EntityFrameworkCore/ChaosDotNet.EntityFrameworkCore.csproj" />
     <Project Path="src/ChaosDotNet.Npgsql/ChaosDotNet.Npgsql.csproj" />
+    <Project Path="src/ChaosDotNet.Redis/ChaosDotNet.Redis.csproj" />
     <Project Path="src/ChaosDotNet.Sql/ChaosDotNet.Sql.csproj" />
     <Project Path="src/ChaosDotNet.SqlServer/ChaosDotNet.SqlServer.csproj" />
     <Project Path="src/ChaosDotNet/ChaosDotNet.csproj" />
