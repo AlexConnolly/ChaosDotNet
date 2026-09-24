@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Chaotic veneers over infrastructure clients for .NET tests. Build an HttpClient (or any interface) that follows a timeline of faults: freeze for 10 seconds, fail the next 3 calls, add latency every 30 seconds.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ChaosDotNet.Tests" />
+  </ItemGroup>
+
+</Project>
