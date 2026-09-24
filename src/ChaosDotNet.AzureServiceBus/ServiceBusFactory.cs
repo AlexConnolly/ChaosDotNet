@@ -34,6 +34,16 @@ public sealed class ServiceBusChaosCall : ChaosCall
 
     /// <summary>The received message being settled or processed. <see langword="null"/> for other operations.</summary>
     public ServiceBusReceivedMessage? ReceivedMessage { get; }
+
+    /// <inheritdoc />
+    public override string? Details
+    {
+        get
+        {
+            var subject = ReceivedMessage?.Subject ?? Messages.FirstOrDefault()?.Subject;
+            return subject is null ? EntityPath : $"{EntityPath}: {subject}";
+        }
+    }
 }
 
 /// <summary>

@@ -16,6 +16,9 @@ public sealed class CacheChaosCall : ChaosCall
 
     /// <summary>The cache key.</summary>
     public string Key { get; }
+
+    /// <inheritdoc />
+    public override string? Details => Key;
 }
 
 /// <summary>

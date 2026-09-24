@@ -13,6 +13,7 @@ ChaosDotNet.Factories.RedisValueFault
 ChaosDotNet.Factories.RedisValueFault.Corrupt.get -> bool
 ChaosDotNet.Factories.RedisValueFault.NextValue() -> StackExchange.Redis.RedisValue
 ChaosDotNet.Factories.RedisValueFault.RedisValueFault(System.Random! random, bool corrupt) -> void
+override ChaosDotNet.Factories.RedisChaosCall.Details.get -> string?
 override ChaosDotNet.Factories.RedisValueFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
 override ChaosDotNet.Factories.RedisValueFault.Name.get -> string!
 static ChaosDotNet.DependencyInjection.ChaosServicesRedisExtensions.Redis(this ChaosDotNet.DependencyInjection.ChaosServicesBuilder! builder, System.Action<ChaosDotNet.Factories.RedisFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!

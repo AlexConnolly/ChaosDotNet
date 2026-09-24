@@ -32,6 +32,9 @@ public sealed class RedisChaosCall : ProxyChaosCall
 
     /// <summary>The pub/sub channel, for subscriber commands.</summary>
     public string? Channel { get; }
+
+    /// <inheritdoc />
+    public override string? Details => Key ?? Channel;
 }
 
 /// <summary>

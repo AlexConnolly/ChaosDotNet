@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Globalization;
+using ChaosDotNet.Reports;
 using Microsoft.Extensions.Time.Testing;
 using Xunit.Sdk;
 using Xunit.v3;
@@ -15,7 +16,9 @@ internal sealed record ChaosTheoryOptions(
     bool AllowDataLoss,
     bool RealTime,
     bool Shrink,
-    int MaxShrinkRuns)
+    int MaxShrinkRuns,
+    string? ReportDirectory,
+    bool ReportAll)
 {
     public static ChaosTheoryOptions From(ChaosTheoryAttribute attribute, int seed) => new(
         seed,
@@ -26,7 +29,9 @@ internal sealed record ChaosTheoryOptions(
         attribute.AllowDataLoss,
         attribute.RealTime,
         attribute.Shrink,
-        attribute.MaxShrinkRuns);
+        attribute.MaxShrinkRuns,
+        attribute.ReportDirectory,
+        attribute.ReportAll);
 
     public ChaosMonkeyOptions Monkey => new()
     {
@@ -101,12 +106,30 @@ public sealed class ChaosTheoryTestCase : XunitTestCase, ISelfExecutingXunitTest
             constructorArguments,
             methodFixtureMappings).ConfigureAwait(false);
 
-        var note = summary.Failed > 0
-            ? await DescribeFailureAsync(monkey.Plan, explicitOption, constructorArguments, cancellationTokenSource, parallelMode, scheduler, methodFixtureMappings).ConfigureAwait(false)
-            : null;
+        string? note = null;
+        ChaosMonkey? smallest = null;
+        if (summary.Failed > 0)
+        {
+            smallest = await ShrinkAsync(monkey, explicitOption, constructorArguments, cancellationTokenSource, parallelMode, scheduler, methodFixtureMappings).ConfigureAwait(false);
+            note = Describe(monkey.Plan, smallest.Plan);
+        }
+
+        var reports = _options.ReportDirectory ?? ChaosReports.DirectoryFromEnvironment;
+        if (reports is not null && summary.Skipped == 0 && summary.NotRun == 0)
+        {
+            var failure = summary.Failed > 0 ? buffer.FailureText ?? "The test failed." : null;
+            var report = ChaosReports.Record(reports, TestName, monkey, failure, smallest == monkey ? null : smallest, _options.ReportAll);
+            if (note is not null && report is not null)
+            {
+                note += $"{Environment.NewLine}Report: {report}";
+            }
+        }
+
         buffer.Flush(messageBus, note);
         return summary;
     }
+
+    private string TestName => $"{TestMethod.TestClass.Class.Name}.{TestMethod.MethodName}";
 
     /// <inheritdoc />
     protected override void Serialize(IXunitSerializationInfo info)
@@ -122,6 +145,8 @@ public sealed class ChaosTheoryTestCase : XunitTestCase, ISelfExecutingXunitTest
         info.AddValue("ChaosRealTime", _options.RealTime);
         info.AddValue("ChaosShrink", _options.Shrink);
         info.AddValue("ChaosShrinkRuns", _options.MaxShrinkRuns);
+        info.AddValue("ChaosReportDirectory", _options.ReportDirectory);
+        info.AddValue("ChaosReportAll", _options.ReportAll);
     }
 
     /// <inheritdoc />
@@ -138,7 +163,9 @@ public sealed class ChaosTheoryTestCase : XunitTestCase, ISelfExecutingXunitTest
             info.GetValue<bool>("ChaosDataLoss"),
             info.GetValue<bool>("ChaosRealTime"),
             info.GetValue<bool>("ChaosShrink"),
-            info.GetValue<int>("ChaosShrinkRuns"));
+            info.GetValue<int>("ChaosShrinkRuns"),
+            info.GetValue<string?>("ChaosReportDirectory"),
+            info.GetValue<bool>("ChaosReportAll"));
     }
 
     private static HashSet<int>? Incidents()
@@ -172,8 +199,8 @@ public sealed class ChaosTheoryTestCase : XunitTestCase, ISelfExecutingXunitTest
         TestLabel,
         DisableParallelization);
 
-    private async Task<string> DescribeFailureAsync(
-        ChaosPlan plan,
+    private async Task<ChaosMonkey> ShrinkAsync(
+        ChaosMonkey original,
         ExplicitOption explicitOption,
         object?[] constructorArguments,
         CancellationTokenSource cancellation,
@@ -181,7 +208,8 @@ public sealed class ChaosTheoryTestCase : XunitTestCase, ISelfExecutingXunitTest
         ExecutionScheduler scheduler,
         FixtureMappingManager fixtureMappings)
     {
-        var smallest = plan;
+        var plan = original.Plan;
+        var smallest = original;
         if (_options.Shrink && plan.Incidents.Count > 0)
         {
             var kept = plan.Incidents.Select(i => i.Number).ToHashSet();
@@ -209,11 +237,16 @@ public sealed class ChaosTheoryTestCase : XunitTestCase, ISelfExecutingXunitTest
                 if (result.Failed > 0)
                 {
                     kept = trial;
-                    smallest = monkey.Plan;
+                    smallest = monkey;
                 }
             }
         }
 
+        return smallest;
+    }
+
+    private string Describe(ChaosPlan plan, ChaosPlan smallest)
+    {
         var text = new System.Text.StringBuilder()
             .AppendLine()
             .AppendLine()
@@ -245,6 +278,21 @@ internal sealed class BufferingMessageBus : IMessageBus
         }
 
         return true;
+    }
+
+    /// <summary>The first failure's exception type and message, once the test has failed.</summary>
+    public string? FailureText
+    {
+        get
+        {
+            lock (_messages)
+            {
+                var failed = _messages.OfType<ITestFailed>().FirstOrDefault();
+                return failed is null || failed.Messages.Length == 0
+                    ? null
+                    : $"{failed.ExceptionTypes.FirstOrDefault()?.Split('.').Last()}: {failed.Messages[0]}";
+            }
+        }
     }
 
     public void Flush(IMessageBus target, string? failureNote)

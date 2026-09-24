@@ -12,6 +12,9 @@ public sealed class HttpChaosCall : ChaosCall
 
     /// <summary>The request being sent.</summary>
     public HttpRequestMessage Request { get; }
+
+    /// <inheritdoc />
+    public override string? Details => Request.RequestUri?.IsAbsoluteUri == true ? Request.RequestUri.PathAndQuery : Request.RequestUri?.ToString();
 }
 
 /// <summary>

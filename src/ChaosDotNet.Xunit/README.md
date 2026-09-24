@@ -39,6 +39,7 @@ Reproduce: set CHAOS_SEED=3 CHAOS_INCIDENTS=6
 - Seeds are 1 to `Runs` (default 20), so every build runs the same cases. `Seeds = [3, 17]` pins seeds that failed before as regression cases.
 - `CHAOS_SEED=3` runs only seed 3, and `CHAOS_INCIDENTS=6` replays only those incidents. `CHAOS_EXPLORE=random` picks new seeds, for example in a nightly build.
 - Shrinking re-runs the whole test silently (constructor, before/after attributes, body), up to `MaxShrinkRuns` times. Set `Shrink = false` if the test has side effects that must not repeat.
+- With `CHAOS_REPORT_DIR` set (or `ReportDirectory = "..."`), each failing case writes an HTML report and adds `Report: <path>` to its message. Every case adds to the folder's coverage in `index.html`. `ReportAll = true` writes a page for passing cases too. See [Reports and coverage](https://github.com/AlexConnolly/ChaosDotNet/blob/main/src/ChaosDotNet/README.md#reports-and-coverage).
 - Other options: `Intensity`, `DurationSeconds`, `CorrelatedFaults`, `MaxConcurrentIncidents`, `AllowDataLoss`, `Shrink` (default on), `MaxShrinkRuns` (default 30). `Skip`, `Explicit`, `Timeout` and traits work as on `[Fact]`.
 
 For other test frameworks, use `ChaosMonkey.ExploreAsync` from the core package.

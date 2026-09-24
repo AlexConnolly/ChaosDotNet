@@ -291,6 +291,12 @@ public sealed class ChaosEngine
         }
     }
 
+    private static string? Details(ChaosCall call)
+    {
+        var details = call.Details;
+        return details is { Length: > 200 } ? details[..197] + "..." : details;
+    }
+
     private static NotSupportedException Unsupported(Fault fault) =>
         new($"The fault '{fault.Name}' is not supported by this veneer.");
 
@@ -304,7 +310,7 @@ public sealed class ChaosEngine
                 Advance(now);
             }
 
-            _log.Add(new ChaosEvent(now, kind, Operation: call.Operation, Exception: exception));
+            _log.Add(new ChaosEvent(now, kind, Operation: call.Operation, Exception: exception) { Details = Details(call) });
         }
     }
 
@@ -367,13 +373,14 @@ public sealed class ChaosEngine
 
             if (segment.Rate < 1.0 && (segment.Random ?? _random).NextDouble() >= segment.Rate)
             {
-                _log.Add(new ChaosEvent(now, ChaosEventKind.FaultSkipped, segment.WindowIndex, call.Operation));
+                _log.Add(new ChaosEvent(now, ChaosEventKind.FaultSkipped, segment.WindowIndex, call.Operation) { Details = Details(call) });
                 return default;
             }
 
             _log.Add(new ChaosEvent(now, ChaosEventKind.FaultInjected, segment.WindowIndex, call.Operation, segment.Fault!.Name)
             {
                 WindowEndsAt = activeUntil,
+                Details = Details(call),
             });
 
             return new Decision(segment.Fault, segment, activeUntil);

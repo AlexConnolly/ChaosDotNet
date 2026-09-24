@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Time.Testing;
 
 namespace ChaosDotNet;
@@ -113,8 +114,45 @@ public sealed class ChaosMonkey : ChaosScenario
     /// <param name="runs">How many seeds to try. By default the seeds are 1 to <paramref name="runs"/>, so results are the same on every build.</param>
     /// <param name="scenario">The test. Build factories with the monkey it gets, run the workload with <see cref="RunAsync(Func{Task}, double)"/>, and assert invariants.</param>
     /// <param name="options">The settings.</param>
-    public static Task ExploreAsync(int runs, Func<ChaosMonkey, Task> scenario, ChaosExploreOptions? options = null) =>
-        ChaosExplorer.ExploreAsync(runs, scenario, options ?? new ChaosExploreOptions());
+    public static Task ExploreAsync(int runs, Func<ChaosMonkey, Task> scenario, ChaosExploreOptions? options = null)
+    {
+        options ??= new ChaosExploreOptions();
+        return ChaosExplorer.ExploreAsync(runs, scenario, options, options.Name ?? CallerName());
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static string CallerName()
+    {
+        foreach (var frame in new StackTrace().GetFrames().Skip(1))
+        {
+            var method = frame.GetMethod();
+            var type = method?.DeclaringType;
+            if (method is null || type is null || type.Assembly == typeof(ChaosMonkey).Assembly)
+            {
+                continue;
+            }
+
+            // Async methods and lambdas run on compiler-generated types such as <Method>d__4 and <>c, with names like <Method>b__4_0.
+            if (type.Name.StartsWith('<'))
+            {
+                var owner = type;
+                while (owner.DeclaringType is not null && owner.Name.StartsWith('<'))
+                {
+                    owner = owner.DeclaringType;
+                }
+
+                var name = Unmangle(type.Name);
+                return $"{owner.Name}.{(name.Length > 0 ? name : Unmangle(method.Name))}";
+            }
+
+            return $"{type.Name}.{Unmangle(method.Name)}";
+        }
+
+        return "Explore";
+
+        static string Unmangle(string name) =>
+            name.StartsWith('<') && name.IndexOf('>', StringComparison.Ordinal) is var end and > 0 ? name[1..end] : name;
+    }
 
     /// <summary>
     /// Moves a fake clock like a simulation: wait until the workload has settled, then jump to the next timer it waits on.

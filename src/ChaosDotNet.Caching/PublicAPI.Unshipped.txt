@@ -12,6 +12,7 @@ ChaosDotNet.Factories.CorruptFault
 ChaosDotNet.Factories.CorruptFault.CorruptFault(System.Random! random) -> void
 ChaosDotNet.Factories.CorruptFault.NextValue() -> byte[]!
 ChaosDotNet.Factories.MissFault
+override ChaosDotNet.Factories.CacheChaosCall.Details.get -> string?
 override ChaosDotNet.Factories.CorruptFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
 override ChaosDotNet.Factories.CorruptFault.Name.get -> string!
 override ChaosDotNet.Factories.MissFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool

@@ -28,6 +28,8 @@ ChaosDotNet.ChaosEvent
 ChaosDotNet.ChaosEvent.<Clone>$() -> ChaosDotNet.ChaosEvent!
 ChaosDotNet.ChaosEvent.ChaosEvent(System.DateTimeOffset Timestamp, ChaosDotNet.ChaosEventKind Kind, int? Window = null, string? Operation = null, string? Fault = null, System.Exception? Exception = null) -> void
 ChaosDotNet.ChaosEvent.Deconstruct(out System.DateTimeOffset Timestamp, out ChaosDotNet.ChaosEventKind Kind, out int? Window, out string? Operation, out string? Fault, out System.Exception? Exception) -> void
+ChaosDotNet.ChaosEvent.Details.get -> string?
+ChaosDotNet.ChaosEvent.Details.init -> void
 ChaosDotNet.ChaosEvent.Equals(ChaosDotNet.ChaosEvent? other) -> bool
 ChaosDotNet.ChaosEvent.Exception.get -> System.Exception?
 ChaosDotNet.ChaosEvent.Exception.init -> void
@@ -62,6 +64,8 @@ ChaosDotNet.ChaosExplorationFailure.Exception.get -> System.Exception!
 ChaosDotNet.ChaosExplorationFailure.Exception.init -> void
 ChaosDotNet.ChaosExplorationFailure.Plan.get -> ChaosDotNet.ChaosPlan!
 ChaosDotNet.ChaosExplorationFailure.Plan.init -> void
+ChaosDotNet.ChaosExplorationFailure.ReportPath.get -> string?
+ChaosDotNet.ChaosExplorationFailure.ReportPath.init -> void
 ChaosDotNet.ChaosExplorationFailure.Seed.get -> int
 ChaosDotNet.ChaosExplorationFailure.Seed.init -> void
 ChaosDotNet.ChaosExplorationFailure.ShrunkPlan.get -> ChaosDotNet.ChaosPlan!
@@ -72,10 +76,16 @@ ChaosDotNet.ChaosExploreOptions.MaxShrinkRuns.get -> int
 ChaosDotNet.ChaosExploreOptions.MaxShrinkRuns.init -> void
 ChaosDotNet.ChaosExploreOptions.Monkey.get -> ChaosDotNet.ChaosMonkeyOptions!
 ChaosDotNet.ChaosExploreOptions.Monkey.init -> void
+ChaosDotNet.ChaosExploreOptions.Name.get -> string?
+ChaosDotNet.ChaosExploreOptions.Name.init -> void
 ChaosDotNet.ChaosExploreOptions.RandomSeeds.get -> bool
 ChaosDotNet.ChaosExploreOptions.RandomSeeds.init -> void
 ChaosDotNet.ChaosExploreOptions.RealTime.get -> bool
 ChaosDotNet.ChaosExploreOptions.RealTime.init -> void
+ChaosDotNet.ChaosExploreOptions.ReportAll.get -> bool
+ChaosDotNet.ChaosExploreOptions.ReportAll.init -> void
+ChaosDotNet.ChaosExploreOptions.ReportDirectory.get -> string?
+ChaosDotNet.ChaosExploreOptions.ReportDirectory.init -> void
 ChaosDotNet.ChaosExploreOptions.Seeds.get -> System.Collections.Generic.IReadOnlyList<int>?
 ChaosDotNet.ChaosExploreOptions.Seeds.init -> void
 ChaosDotNet.ChaosExploreOptions.Shrink.get -> bool
@@ -276,6 +286,118 @@ ChaosDotNet.Proxies.ProxyChaosCall.Method.get -> System.Reflection.MethodInfo!
 ChaosDotNet.Proxies.ProxyChaosCall.ProxyChaosCall(System.Reflection.MethodInfo! method, object?[]! arguments) -> void
 ChaosDotNet.RepeatBuilder<TSelf, TCall>
 ChaosDotNet.RepeatBuilder<TSelf, TCall>.For(double amount, ChaosDotNet.TimeUnit unit) -> ChaosDotNet.WindowBuilder<TSelf!, TCall!>!
+ChaosDotNet.Reports.ChaosCoverage
+ChaosDotNet.Reports.ChaosCoverage.Dependencies.get -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosDependencyCoverage!>!
+ChaosDotNet.Reports.ChaosCoverage.Failures.get -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosRunFailure!>!
+ChaosDotNet.Reports.ChaosCoverage.Gaps.get -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosCoverageGap!>!
+ChaosDotNet.Reports.ChaosCoverage.Runs.get -> int
+ChaosDotNet.Reports.ChaosCoverage.Tests.get -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosTestCoverage!>!
+ChaosDotNet.Reports.ChaosCoverage.ToHtml() -> string!
+ChaosDotNet.Reports.ChaosCoverage.WriteHtml(string! path) -> void
+ChaosDotNet.Reports.ChaosCoverageGap
+ChaosDotNet.Reports.ChaosCoverageGap.<Clone>$() -> ChaosDotNet.Reports.ChaosCoverageGap!
+ChaosDotNet.Reports.ChaosCoverageGap.ChaosCoverageGap(string! Dependency, string! Fault, ChaosDotNet.MonkeyFaultKind Kind, bool Planned) -> void
+ChaosDotNet.Reports.ChaosCoverageGap.Deconstruct(out string! Dependency, out string! Fault, out ChaosDotNet.MonkeyFaultKind Kind, out bool Planned) -> void
+ChaosDotNet.Reports.ChaosCoverageGap.Dependency.get -> string!
+ChaosDotNet.Reports.ChaosCoverageGap.Dependency.init -> void
+ChaosDotNet.Reports.ChaosCoverageGap.Equals(ChaosDotNet.Reports.ChaosCoverageGap? other) -> bool
+ChaosDotNet.Reports.ChaosCoverageGap.Fault.get -> string!
+ChaosDotNet.Reports.ChaosCoverageGap.Fault.init -> void
+ChaosDotNet.Reports.ChaosCoverageGap.Kind.get -> ChaosDotNet.MonkeyFaultKind
+ChaosDotNet.Reports.ChaosCoverageGap.Kind.init -> void
+ChaosDotNet.Reports.ChaosCoverageGap.Planned.get -> bool
+ChaosDotNet.Reports.ChaosCoverageGap.Planned.init -> void
+ChaosDotNet.Reports.ChaosDependencyCoverage
+ChaosDotNet.Reports.ChaosDependencyCoverage.<Clone>$() -> ChaosDotNet.Reports.ChaosDependencyCoverage!
+ChaosDotNet.Reports.ChaosDependencyCoverage.ChaosDependencyCoverage(string! Dependency, System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosFaultCoverage!>! Faults) -> void
+ChaosDotNet.Reports.ChaosDependencyCoverage.Deconstruct(out string! Dependency, out System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosFaultCoverage!>! Faults) -> void
+ChaosDotNet.Reports.ChaosDependencyCoverage.Dependency.get -> string!
+ChaosDotNet.Reports.ChaosDependencyCoverage.Dependency.init -> void
+ChaosDotNet.Reports.ChaosDependencyCoverage.Equals(ChaosDotNet.Reports.ChaosDependencyCoverage? other) -> bool
+ChaosDotNet.Reports.ChaosDependencyCoverage.Faults.get -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosFaultCoverage!>!
+ChaosDotNet.Reports.ChaosDependencyCoverage.Faults.init -> void
+ChaosDotNet.Reports.ChaosDependencyCoverage.Ratio.get -> double
+ChaosDotNet.Reports.ChaosFaultCoverage
+ChaosDotNet.Reports.ChaosFaultCoverage.<Clone>$() -> ChaosDotNet.Reports.ChaosFaultCoverage!
+ChaosDotNet.Reports.ChaosFaultCoverage.Calls.get -> int
+ChaosDotNet.Reports.ChaosFaultCoverage.Calls.init -> void
+ChaosDotNet.Reports.ChaosFaultCoverage.ChaosFaultCoverage(string! Fault, ChaosDotNet.MonkeyFaultKind Kind, int Planned, int Hit, int Calls) -> void
+ChaosDotNet.Reports.ChaosFaultCoverage.Deconstruct(out string! Fault, out ChaosDotNet.MonkeyFaultKind Kind, out int Planned, out int Hit, out int Calls) -> void
+ChaosDotNet.Reports.ChaosFaultCoverage.Equals(ChaosDotNet.Reports.ChaosFaultCoverage? other) -> bool
+ChaosDotNet.Reports.ChaosFaultCoverage.Fault.get -> string!
+ChaosDotNet.Reports.ChaosFaultCoverage.Fault.init -> void
+ChaosDotNet.Reports.ChaosFaultCoverage.Hit.get -> int
+ChaosDotNet.Reports.ChaosFaultCoverage.Hit.init -> void
+ChaosDotNet.Reports.ChaosFaultCoverage.Kind.get -> ChaosDotNet.MonkeyFaultKind
+ChaosDotNet.Reports.ChaosFaultCoverage.Kind.init -> void
+ChaosDotNet.Reports.ChaosFaultCoverage.Planned.get -> int
+ChaosDotNet.Reports.ChaosFaultCoverage.Planned.init -> void
+ChaosDotNet.Reports.ChaosReport
+ChaosDotNet.Reports.ChaosReport.Failure.get -> string?
+ChaosDotNet.Reports.ChaosReport.Lanes.get -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosReportLane!>!
+ChaosDotNet.Reports.ChaosReport.Length.get -> System.TimeSpan
+ChaosDotNet.Reports.ChaosReport.Passed.get -> bool
+ChaosDotNet.Reports.ChaosReport.Plan.get -> ChaosDotNet.ChaosPlan!
+ChaosDotNet.Reports.ChaosReport.Seed.get -> int
+ChaosDotNet.Reports.ChaosReport.ShrunkPlan.get -> ChaosDotNet.ChaosPlan?
+ChaosDotNet.Reports.ChaosReport.Title.get -> string!
+ChaosDotNet.Reports.ChaosReport.ToHtml() -> string!
+ChaosDotNet.Reports.ChaosReport.WriteHtml(string! path) -> void
+ChaosDotNet.Reports.ChaosReportEvent
+ChaosDotNet.Reports.ChaosReportEvent.<Clone>$() -> ChaosDotNet.Reports.ChaosReportEvent!
+ChaosDotNet.Reports.ChaosReportEvent.At.get -> System.TimeSpan
+ChaosDotNet.Reports.ChaosReportEvent.At.init -> void
+ChaosDotNet.Reports.ChaosReportEvent.ChaosReportEvent(System.TimeSpan At, ChaosDotNet.ChaosEventKind Kind, string? Operation, string? Details, string? Fault, string? Error) -> void
+ChaosDotNet.Reports.ChaosReportEvent.Deconstruct(out System.TimeSpan At, out ChaosDotNet.ChaosEventKind Kind, out string? Operation, out string? Details, out string? Fault, out string? Error) -> void
+ChaosDotNet.Reports.ChaosReportEvent.Details.get -> string?
+ChaosDotNet.Reports.ChaosReportEvent.Details.init -> void
+ChaosDotNet.Reports.ChaosReportEvent.Equals(ChaosDotNet.Reports.ChaosReportEvent? other) -> bool
+ChaosDotNet.Reports.ChaosReportEvent.Error.get -> string?
+ChaosDotNet.Reports.ChaosReportEvent.Error.init -> void
+ChaosDotNet.Reports.ChaosReportEvent.Fault.get -> string?
+ChaosDotNet.Reports.ChaosReportEvent.Fault.init -> void
+ChaosDotNet.Reports.ChaosReportEvent.Kind.get -> ChaosDotNet.ChaosEventKind
+ChaosDotNet.Reports.ChaosReportEvent.Kind.init -> void
+ChaosDotNet.Reports.ChaosReportEvent.Operation.get -> string?
+ChaosDotNet.Reports.ChaosReportEvent.Operation.init -> void
+ChaosDotNet.Reports.ChaosReportLane
+ChaosDotNet.Reports.ChaosReportLane.<Clone>$() -> ChaosDotNet.Reports.ChaosReportLane!
+ChaosDotNet.Reports.ChaosReportLane.ChaosReportLane(string! Dependency, System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosReportEvent!>! Events) -> void
+ChaosDotNet.Reports.ChaosReportLane.Deconstruct(out string! Dependency, out System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosReportEvent!>! Events) -> void
+ChaosDotNet.Reports.ChaosReportLane.Dependency.get -> string!
+ChaosDotNet.Reports.ChaosReportLane.Dependency.init -> void
+ChaosDotNet.Reports.ChaosReportLane.Equals(ChaosDotNet.Reports.ChaosReportLane? other) -> bool
+ChaosDotNet.Reports.ChaosReportLane.Events.get -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosReportEvent!>!
+ChaosDotNet.Reports.ChaosReportLane.Events.init -> void
+ChaosDotNet.Reports.ChaosReports
+ChaosDotNet.Reports.ChaosRunFailure
+ChaosDotNet.Reports.ChaosRunFailure.<Clone>$() -> ChaosDotNet.Reports.ChaosRunFailure!
+ChaosDotNet.Reports.ChaosRunFailure.ChaosRunFailure(string! Test, int Seed, string! Failure, string? Report, string? ReproduceWith) -> void
+ChaosDotNet.Reports.ChaosRunFailure.Deconstruct(out string! Test, out int Seed, out string! Failure, out string? Report, out string? ReproduceWith) -> void
+ChaosDotNet.Reports.ChaosRunFailure.Equals(ChaosDotNet.Reports.ChaosRunFailure? other) -> bool
+ChaosDotNet.Reports.ChaosRunFailure.Failure.get -> string!
+ChaosDotNet.Reports.ChaosRunFailure.Failure.init -> void
+ChaosDotNet.Reports.ChaosRunFailure.Report.get -> string?
+ChaosDotNet.Reports.ChaosRunFailure.Report.init -> void
+ChaosDotNet.Reports.ChaosRunFailure.ReproduceWith.get -> string?
+ChaosDotNet.Reports.ChaosRunFailure.ReproduceWith.init -> void
+ChaosDotNet.Reports.ChaosRunFailure.Seed.get -> int
+ChaosDotNet.Reports.ChaosRunFailure.Seed.init -> void
+ChaosDotNet.Reports.ChaosRunFailure.Test.get -> string!
+ChaosDotNet.Reports.ChaosRunFailure.Test.init -> void
+ChaosDotNet.Reports.ChaosTestCoverage
+ChaosDotNet.Reports.ChaosTestCoverage.<Clone>$() -> ChaosDotNet.Reports.ChaosTestCoverage!
+ChaosDotNet.Reports.ChaosTestCoverage.ChaosTestCoverage(string! Test, int Runs, int Failed, System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosDependencyCoverage!>! Dependencies) -> void
+ChaosDotNet.Reports.ChaosTestCoverage.Deconstruct(out string! Test, out int Runs, out int Failed, out System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosDependencyCoverage!>! Dependencies) -> void
+ChaosDotNet.Reports.ChaosTestCoverage.Dependencies.get -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.Reports.ChaosDependencyCoverage!>!
+ChaosDotNet.Reports.ChaosTestCoverage.Dependencies.init -> void
+ChaosDotNet.Reports.ChaosTestCoverage.Equals(ChaosDotNet.Reports.ChaosTestCoverage? other) -> bool
+ChaosDotNet.Reports.ChaosTestCoverage.Failed.get -> int
+ChaosDotNet.Reports.ChaosTestCoverage.Failed.init -> void
+ChaosDotNet.Reports.ChaosTestCoverage.Runs.get -> int
+ChaosDotNet.Reports.ChaosTestCoverage.Runs.init -> void
+ChaosDotNet.Reports.ChaosTestCoverage.Test.get -> string!
+ChaosDotNet.Reports.ChaosTestCoverage.Test.init -> void
 ChaosDotNet.SetupBuilder<T, TResult>
 ChaosDotNet.SetupBuilder<T, TResult>.Callback(System.Action! callback) -> ChaosDotNet.SetupBuilder<T!, TResult>!
 ChaosDotNet.SetupBuilder<T, TResult>.Callback<T1, T2>(System.Action<T1, T2>! callback) -> ChaosDotNet.SetupBuilder<T!, TResult>!
@@ -324,6 +446,7 @@ ChaosDotNet.WindowBuilder<TSelf, TCall>.Freeze() -> TSelf!
 ChaosDotNet.WindowBuilder<TSelf, TCall>.Inject(ChaosDotNet.Fault! fault) -> TSelf!
 ChaosDotNet.WindowBuilder<TSelf, TCall>.Jitter(double min, double max, ChaosDotNet.TimeUnit unit) -> TSelf!
 ChaosDotNet.WindowBuilder<TSelf, TCall>.Latency(double amount, ChaosDotNet.TimeUnit unit) -> TSelf!
+const ChaosDotNet.Reports.ChaosReports.DirectoryVariable = "CHAOS_REPORT_DIR" -> string!
 override ChaosDotNet.ChaosCall.ToString() -> string!
 override ChaosDotNet.ChaosEvent.Equals(object? obj) -> bool
 override ChaosDotNet.ChaosEvent.GetHashCode() -> int
@@ -342,6 +465,7 @@ override ChaosDotNet.Factories.BreakBodyFault.Name.get -> string!
 override ChaosDotNet.Factories.ClockFault.Activated() -> void
 override ChaosDotNet.Factories.ClockFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
 override ChaosDotNet.Factories.ClockFault.Name.get -> string!
+override ChaosDotNet.Factories.HttpChaosCall.Details.get -> string?
 override ChaosDotNet.Factories.HttpResponseFault.Name.get -> string!
 override ChaosDotNet.FailFault.Name.get -> string!
 override ChaosDotNet.Fault.ToString() -> string!
@@ -351,6 +475,28 @@ override ChaosDotNet.LatencyFault.Name.get -> string!
 override ChaosDotNet.OddValueFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
 override ChaosDotNet.OddValueFault.Name.get -> string!
 override ChaosDotNet.Proxies.ChaosDispatchProxy.Invoke(System.Reflection.MethodInfo? targetMethod, object?[]? args) -> object?
+override ChaosDotNet.Proxies.ProxyChaosCall.Details.get -> string?
+override ChaosDotNet.Reports.ChaosCoverageGap.Equals(object? obj) -> bool
+override ChaosDotNet.Reports.ChaosCoverageGap.GetHashCode() -> int
+override ChaosDotNet.Reports.ChaosCoverageGap.ToString() -> string!
+override ChaosDotNet.Reports.ChaosDependencyCoverage.Equals(object? obj) -> bool
+override ChaosDotNet.Reports.ChaosDependencyCoverage.GetHashCode() -> int
+override ChaosDotNet.Reports.ChaosDependencyCoverage.ToString() -> string!
+override ChaosDotNet.Reports.ChaosFaultCoverage.Equals(object? obj) -> bool
+override ChaosDotNet.Reports.ChaosFaultCoverage.GetHashCode() -> int
+override ChaosDotNet.Reports.ChaosFaultCoverage.ToString() -> string!
+override ChaosDotNet.Reports.ChaosReportEvent.Equals(object? obj) -> bool
+override ChaosDotNet.Reports.ChaosReportEvent.GetHashCode() -> int
+override ChaosDotNet.Reports.ChaosReportEvent.ToString() -> string!
+override ChaosDotNet.Reports.ChaosReportLane.Equals(object? obj) -> bool
+override ChaosDotNet.Reports.ChaosReportLane.GetHashCode() -> int
+override ChaosDotNet.Reports.ChaosReportLane.ToString() -> string!
+override ChaosDotNet.Reports.ChaosRunFailure.Equals(object? obj) -> bool
+override ChaosDotNet.Reports.ChaosRunFailure.GetHashCode() -> int
+override ChaosDotNet.Reports.ChaosRunFailure.ToString() -> string!
+override ChaosDotNet.Reports.ChaosTestCoverage.Equals(object? obj) -> bool
+override ChaosDotNet.Reports.ChaosTestCoverage.GetHashCode() -> int
+override ChaosDotNet.Reports.ChaosTestCoverage.ToString() -> string!
 override ChaosDotNet.SubjectBehaviourProxy.Invoke(System.Reflection.MethodInfo? targetMethod, object?[]? args) -> object?
 override ChaosDotNet.SubjectCall.ToString() -> string!
 override ChaosDotNet.Times.GetHashCode() -> int
@@ -411,6 +557,24 @@ static ChaosDotNet.OddValueFaults.ReturnOddValues<T>(this ChaosDotNet.WindowBuil
 static ChaosDotNet.OddValues.For(System.Type! type, System.Random! random) -> object?
 static ChaosDotNet.Proxies.ChaosProxy.Create<T>(T! target, ChaosDotNet.ChaosEngine! engine, ChaosDotNet.Proxies.ChaosProxyOptions? options = null) -> T!
 static ChaosDotNet.Proxies.ProxyChaosCall.OperationName(System.Reflection.MethodInfo! method) -> string!
+static ChaosDotNet.Reports.ChaosCoverage.Load(string! directory) -> ChaosDotNet.Reports.ChaosCoverage!
+static ChaosDotNet.Reports.ChaosCoverageGap.operator !=(ChaosDotNet.Reports.ChaosCoverageGap? left, ChaosDotNet.Reports.ChaosCoverageGap? right) -> bool
+static ChaosDotNet.Reports.ChaosCoverageGap.operator ==(ChaosDotNet.Reports.ChaosCoverageGap? left, ChaosDotNet.Reports.ChaosCoverageGap? right) -> bool
+static ChaosDotNet.Reports.ChaosDependencyCoverage.operator !=(ChaosDotNet.Reports.ChaosDependencyCoverage? left, ChaosDotNet.Reports.ChaosDependencyCoverage? right) -> bool
+static ChaosDotNet.Reports.ChaosDependencyCoverage.operator ==(ChaosDotNet.Reports.ChaosDependencyCoverage? left, ChaosDotNet.Reports.ChaosDependencyCoverage? right) -> bool
+static ChaosDotNet.Reports.ChaosFaultCoverage.operator !=(ChaosDotNet.Reports.ChaosFaultCoverage? left, ChaosDotNet.Reports.ChaosFaultCoverage? right) -> bool
+static ChaosDotNet.Reports.ChaosFaultCoverage.operator ==(ChaosDotNet.Reports.ChaosFaultCoverage? left, ChaosDotNet.Reports.ChaosFaultCoverage? right) -> bool
+static ChaosDotNet.Reports.ChaosReport.From(ChaosDotNet.ChaosScenario! scenario, string! title, System.Exception? failure = null, ChaosDotNet.ChaosPlan? fullPlan = null) -> ChaosDotNet.Reports.ChaosReport!
+static ChaosDotNet.Reports.ChaosReportEvent.operator !=(ChaosDotNet.Reports.ChaosReportEvent? left, ChaosDotNet.Reports.ChaosReportEvent? right) -> bool
+static ChaosDotNet.Reports.ChaosReportEvent.operator ==(ChaosDotNet.Reports.ChaosReportEvent? left, ChaosDotNet.Reports.ChaosReportEvent? right) -> bool
+static ChaosDotNet.Reports.ChaosReportLane.operator !=(ChaosDotNet.Reports.ChaosReportLane? left, ChaosDotNet.Reports.ChaosReportLane? right) -> bool
+static ChaosDotNet.Reports.ChaosReportLane.operator ==(ChaosDotNet.Reports.ChaosReportLane? left, ChaosDotNet.Reports.ChaosReportLane? right) -> bool
+static ChaosDotNet.Reports.ChaosReports.DirectoryFromEnvironment.get -> string?
+static ChaosDotNet.Reports.ChaosReports.Record(string! directory, string! test, ChaosDotNet.ChaosScenario! scenario, string? failure = null, ChaosDotNet.ChaosMonkey? shrunk = null, bool writeReport = false) -> string?
+static ChaosDotNet.Reports.ChaosRunFailure.operator !=(ChaosDotNet.Reports.ChaosRunFailure? left, ChaosDotNet.Reports.ChaosRunFailure? right) -> bool
+static ChaosDotNet.Reports.ChaosRunFailure.operator ==(ChaosDotNet.Reports.ChaosRunFailure? left, ChaosDotNet.Reports.ChaosRunFailure? right) -> bool
+static ChaosDotNet.Reports.ChaosTestCoverage.operator !=(ChaosDotNet.Reports.ChaosTestCoverage? left, ChaosDotNet.Reports.ChaosTestCoverage? right) -> bool
+static ChaosDotNet.Reports.ChaosTestCoverage.operator ==(ChaosDotNet.Reports.ChaosTestCoverage? left, ChaosDotNet.Reports.ChaosTestCoverage? right) -> bool
 static ChaosDotNet.Times.AtLeast(int count) -> ChaosDotNet.Times
 static ChaosDotNet.Times.AtMost(int count) -> ChaosDotNet.Times
 static ChaosDotNet.Times.Exactly(int count) -> ChaosDotNet.Times
@@ -418,6 +582,7 @@ static ChaosDotNet.Times.Never.get -> ChaosDotNet.Times
 static ChaosDotNet.Times.Once.get -> ChaosDotNet.Times
 static ChaosDotNet.Times.operator !=(ChaosDotNet.Times left, ChaosDotNet.Times right) -> bool
 static ChaosDotNet.Times.operator ==(ChaosDotNet.Times left, ChaosDotNet.Times right) -> bool
+virtual ChaosDotNet.ChaosCall.Details.get -> string?
 virtual ChaosDotNet.ChaosFactory<TSelf, TCall>.DefaultMonkeyFaults() -> System.Collections.Generic.IEnumerable<ChaosDotNet.MonkeyFault!>!
 virtual ChaosDotNet.Fault.Activated() -> void
 virtual ChaosDotNet.Fault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool

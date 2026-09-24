@@ -57,6 +57,16 @@ public class ProxyChaosCall : ChaosCall
     /// <summary>The arguments passed.</summary>
     public IReadOnlyList<object?> Arguments { get; }
 
+    /// <inheritdoc />
+    public override string? Details
+    {
+        get
+        {
+            var shown = Arguments.Where(a => a is not CancellationToken).ToList();
+            return shown.Count == 0 ? null : string.Join(", ", shown.Select(a => a is string text ? $"\"{text}\"" : a?.ToString() ?? "null"));
+        }
+    }
+
     /// <summary>The method name without a trailing <c>Async</c>.</summary>
     public static string OperationName(MethodInfo method) =>
         method.Name.EndsWith("Async", StringComparison.Ordinal) ? method.Name[..^5] : method.Name;

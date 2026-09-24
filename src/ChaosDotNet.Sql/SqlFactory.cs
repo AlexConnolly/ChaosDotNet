@@ -20,6 +20,9 @@ public sealed class SqlChaosCall : ChaosCall
 
     /// <summary><see langword="true"/> for <c>ExecuteReader</c>, <c>ExecuteNonQuery</c> and <c>ExecuteScalar</c>.</summary>
     public bool IsCommand => CommandText is not null;
+
+    /// <inheritdoc />
+    public override string? Details => CommandText is null ? null : string.Join(' ', CommandText.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 }
 
 /// <summary>

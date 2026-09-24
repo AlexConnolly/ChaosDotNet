@@ -30,7 +30,10 @@ Seed 3: Expected: 30  Actual: 29
 Smallest failing plan (1 of 6 incident(s)):
   #3 00:26.5-00:31.6  orders Error: RandomTransient (43 % of calls)
 Reproduce: set CHAOS_SEED=3 CHAOS_INCIDENTS=3
+Report: ./chaos-reports/OrderTests.Orders_are_never_lost-seed-3.html
 ```
+
+Set `CHAOS_REPORT_DIR` and each failure gets an HTML page with a timeline of every call and fault per dependency. `index.html` in the folder lists failures and shows which faults were never tested.
 
 ## Add chaos to what you already have
 
@@ -72,6 +75,7 @@ Unlike Polly's chaos strategies (random, per call, inside a resilience pipeline)
 | **Monkey** | Connects every factory and builds a random plan from a seed. `ExploreAsync` tries many seeds and shrinks failures. |
 | **Subject** | `ChaosSubject<T>`: a chaotic mock of any interface. `Setup(...).Returns(...)` plus the same chaos. |
 | **Clock** | `ClockFactory`: a chaotic `TimeProvider` for the app. Time jumps, goes backwards, drifts or stands still. |
+| **Report** | With `CHAOS_REPORT_DIR` set, an HTML timeline per failing run, and coverage: which catalogue faults hit a call, per dependency and per test. |
 
 Tests stay fast and repeatable: pass a `FakeTimeProvider` and a seed, and a 10-minute scenario runs in milliseconds.
 

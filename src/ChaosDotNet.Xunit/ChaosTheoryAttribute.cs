@@ -60,4 +60,13 @@ public sealed class ChaosTheoryAttribute(
 
     /// <summary>The most extra runs spent shrinking one failing case. Defaults to 30.</summary>
     public int MaxShrinkRuns { get; set; } = 30;
+
+    /// <summary>
+    /// The folder for HTML reports and coverage. Defaults to the <c>CHAOS_REPORT_DIR</c> environment variable. When neither is
+    /// set, nothing is written. Open <c>index.html</c> in the folder for failures and coverage.
+    /// </summary>
+    public string? ReportDirectory { get; set; }
+
+    /// <summary>Write a report page for every seed, not only failing seeds.</summary>
+    public bool ReportAll { get; set; }
 }

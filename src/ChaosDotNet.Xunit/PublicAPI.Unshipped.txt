@@ -15,6 +15,10 @@ ChaosDotNet.ChaosTheoryAttribute.MaxShrinkRuns.get -> int
 ChaosDotNet.ChaosTheoryAttribute.MaxShrinkRuns.set -> void
 ChaosDotNet.ChaosTheoryAttribute.RealTime.get -> bool
 ChaosDotNet.ChaosTheoryAttribute.RealTime.set -> void
+ChaosDotNet.ChaosTheoryAttribute.ReportAll.get -> bool
+ChaosDotNet.ChaosTheoryAttribute.ReportAll.set -> void
+ChaosDotNet.ChaosTheoryAttribute.ReportDirectory.get -> string?
+ChaosDotNet.ChaosTheoryAttribute.ReportDirectory.set -> void
 ChaosDotNet.ChaosTheoryAttribute.Runs.get -> int
 ChaosDotNet.ChaosTheoryAttribute.Runs.set -> void
 ChaosDotNet.ChaosTheoryAttribute.Seeds.get -> int[]?

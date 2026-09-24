@@ -235,6 +235,26 @@ Each factory has a catalogue of faults the monkey can pick. Change it with `With
 
 `RunAsync` moves a fake clock like a simulation: when the workload has settled, it jumps to the next timer the workload waits on. So the same seed gives the same history on a fast laptop or a slow CI runner. Pace the workload on `monkey.Clock`, for example `await Task.Delay(TimeSpan.FromSeconds(2), monkey.Clock)`; timers on other clocks still work, but the monkey falls back to fixed steps. For real containers, set `RealTime = true` in `ChaosExploreOptions`.
 
+## Reports and coverage
+
+Set a report folder and `ExploreAsync` (and `[ChaosTheory]`) writes an HTML page for each failing run:
+
+```shell
+CHAOS_REPORT_DIR=./chaos-reports dotnet test
+```
+
+Each page is one self-contained file: a timeline with a lane per dependency, the incidents as bars and every call as a dot (passed, fault injected, fault skipped, real client failed), then the plan and every event with its details (HTTP path, SQL text, cache key, ...). For a shrunk failure, the timeline shows the smallest failing replay and fades the incidents that were not needed. The failure message ends with the page's path.
+
+`index.html` in the folder lists every failure, then coverage: for each dependency, which faults in its catalogue hit at least one call. A fault that was planned but never hit a call means the code did not use that dependency while it was broken. Coverage also breaks down per test.
+
+| `ChaosExploreOptions` | Meaning |
+| --- | --- |
+| `ReportDirectory` | The folder. Defaults to `CHAOS_REPORT_DIR`. Nothing is written when neither is set. |
+| `ReportAll` | Write a page for every run, not only failures. |
+| `Name` | The test's name in titles and coverage. Defaults to the calling method. |
+
+Coverage is kept per test assembly: each test run replaces that assembly's previous results. Read it in code with `ChaosCoverage.Load(folder)`, for example to fail a build on `coverage.Gaps`. For runs made another way, call `ChaosReports.Record(folder, name, monkey, failure)` or build one page with `ChaosReport.From(monkey, title).WriteHtml(path)`.
+
 ## Limits
 
 - A freeze in a `ForCalls`, `Until` or `Forever` window has no end, so it throws `ChaosFreezeTimeoutException` after 60 s on the factory's clock. Change it with `WithMaxFreeze(...)`.

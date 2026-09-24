@@ -40,6 +40,9 @@ public sealed record ChaosEvent(
     string? Fault = null,
     Exception? Exception = null)
 {
+    /// <summary>The call's details, for example the SQL text or the HTTP path, cut to 200 characters.</summary>
+    public string? Details { get; init; }
+
     internal DateTimeOffset? WindowEndsAt { get; init; }
 
     /// <inheritdoc />

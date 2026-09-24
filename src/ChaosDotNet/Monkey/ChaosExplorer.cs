@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using ChaosDotNet.Reports;
 using Microsoft.Extensions.Time.Testing;
 
 namespace ChaosDotNet;
@@ -27,6 +28,21 @@ public sealed class ChaosExploreOptions
     /// containers when the plan must play out in real time.
     /// </summary>
     public bool RealTime { get; init; }
+
+    /// <summary>
+    /// The test's name, used in report titles, file names and coverage. Defaults to the name of the method that called
+    /// <see cref="ChaosMonkey.ExploreAsync"/>.
+    /// </summary>
+    public string? Name { get; init; }
+
+    /// <summary>
+    /// The folder for HTML reports and coverage. Defaults to the <c>CHAOS_REPORT_DIR</c> environment variable. When neither is
+    /// set, nothing is written. Open <c>index.html</c> in the folder for failures and coverage.
+    /// </summary>
+    public string? ReportDirectory { get; init; }
+
+    /// <summary>Write a report page for every run, not only failing runs.</summary>
+    public bool ReportAll { get; init; }
 }
 
 /// <summary>One failing seed found by <see cref="ChaosMonkey.ExploreAsync"/>.</summary>
@@ -34,7 +50,11 @@ public sealed class ChaosExploreOptions
 /// <param name="Plan">The full plan for the seed.</param>
 /// <param name="ShrunkPlan">The smallest plan found that still fails.</param>
 /// <param name="Exception">The failure from the smallest plan.</param>
-public sealed record ChaosExplorationFailure(int Seed, ChaosPlan Plan, ChaosPlan ShrunkPlan, Exception Exception);
+public sealed record ChaosExplorationFailure(int Seed, ChaosPlan Plan, ChaosPlan ShrunkPlan, Exception Exception)
+{
+    /// <summary>The HTML report's full path, when a report folder is set.</summary>
+    public string? ReportPath { get; init; }
+}
 
 /// <summary>Thrown by <see cref="ChaosMonkey.ExploreAsync"/> when one or more seeds fail.</summary>
 public sealed class ChaosExplorationException : Exception
@@ -72,6 +92,10 @@ public sealed class ChaosExplorationException : Exception
             }
 
             text.AppendLine().Append("Reproduce: set ").Append(failure.ShrunkPlan.ReproduceWith);
+            if (failure.ReportPath is not null)
+            {
+                text.AppendLine().Append("Report: ").Append(failure.ReportPath);
+            }
         }
 
         return text.ToString();
@@ -80,26 +104,33 @@ public sealed class ChaosExplorationException : Exception
 
 internal static class ChaosExplorer
 {
-    public static async Task ExploreAsync(int runs, Func<ChaosMonkey, Task> scenario, ChaosExploreOptions options)
+    public static async Task ExploreAsync(int runs, Func<ChaosMonkey, Task> scenario, ChaosExploreOptions options, string name)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(runs);
         ArgumentNullException.ThrowIfNull(scenario);
 
         var (seeds, only) = ChooseSeeds(runs, options);
         var failures = new List<ChaosExplorationFailure>();
+        var reports = options.ReportDirectory ?? ChaosReports.DirectoryFromEnvironment;
 
         foreach (var seed in seeds)
         {
-            var (error, plan) = await RunOnceAsync(seed, only, scenario, options).ConfigureAwait(false);
+            var (error, monkey) = await RunOnceAsync(seed, only, scenario, options).ConfigureAwait(false);
             if (error is null)
             {
+                if (reports is not null)
+                {
+                    ChaosReports.Record(reports, name, monkey, writeReport: options.ReportAll);
+                }
+
                 continue;
             }
 
             var (shrunk, shrunkError) = options.Shrink
-                ? await ShrinkAsync(seed, plan, error, scenario, options).ConfigureAwait(false)
-                : (plan, error);
-            failures.Add(new ChaosExplorationFailure(seed, plan, shrunk, shrunkError));
+                ? await ShrinkAsync(seed, monkey, error, scenario, options).ConfigureAwait(false)
+                : (monkey, error);
+            var report = reports is null ? null : ChaosReports.Record(reports, name, monkey, shrunkError.ToString(), options.Shrink ? shrunk : null);
+            failures.Add(new ChaosExplorationFailure(seed, monkey.Plan, shrunk.Plan, shrunkError) { ReportPath = report });
         }
 
         if (failures.Count > 0)
@@ -128,25 +159,26 @@ internal static class ChaosExplorer
         return (random ? Enumerable.Range(0, runs).Select(_ => Random.Shared.Next()).ToList() : Enumerable.Range(1, runs).ToList(), null);
     }
 
-    private static async Task<(Exception? Error, ChaosPlan Plan)> RunOnceAsync(int seed, IReadOnlySet<int>? only, Func<ChaosMonkey, Task> scenario, ChaosExploreOptions options)
+    private static async Task<(Exception? Error, ChaosMonkey Monkey)> RunOnceAsync(int seed, IReadOnlySet<int>? only, Func<ChaosMonkey, Task> scenario, ChaosExploreOptions options)
     {
         var clock = options.RealTime ? TimeProvider.System : new FakeTimeProvider();
         var monkey = new ChaosMonkey(clock, seed, options.Monkey, only);
         try
         {
             await scenario(monkey).ConfigureAwait(false);
-            return (null, monkey.Plan);
+            return (null, monkey);
         }
         catch (Exception ex)
         {
-            return (ex, monkey.Plan);
+            return (ex, monkey);
         }
     }
 
-    private static async Task<(ChaosPlan Plan, Exception Error)> ShrinkAsync(int seed, ChaosPlan plan, Exception error, Func<ChaosMonkey, Task> scenario, ChaosExploreOptions options)
+    private static async Task<(ChaosMonkey Monkey, Exception Error)> ShrinkAsync(int seed, ChaosMonkey monkey, Exception error, Func<ChaosMonkey, Task> scenario, ChaosExploreOptions options)
     {
+        var plan = monkey.Plan;
         var kept = plan.Incidents.Select(i => i.Number).ToHashSet();
-        var smallest = plan;
+        var smallest = monkey;
         var budget = options.MaxShrinkRuns;
 
         foreach (var number in plan.Incidents.Select(i => i.Number).ToList())
@@ -157,11 +189,11 @@ internal static class ChaosExplorer
             }
 
             var trial = kept.Where(n => n != number).ToHashSet();
-            var (trialError, trialPlan) = await RunOnceAsync(seed, trial, scenario, options).ConfigureAwait(false);
+            var (trialError, trialMonkey) = await RunOnceAsync(seed, trial, scenario, options).ConfigureAwait(false);
             if (trialError is not null)
             {
                 kept = trial;
-                smallest = trialPlan;
+                smallest = trialMonkey;
                 error = trialError;
             }
         }
