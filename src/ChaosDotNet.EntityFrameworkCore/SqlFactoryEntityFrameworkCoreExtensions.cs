@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ChaosDotNet.Factories;
@@ -25,6 +26,7 @@ internal sealed class ChaosDbInterceptor : DbCommandInterceptor, IDbConnectionIn
     private static readonly SqlChaosCall Commit = new("Commit");
 
     private readonly ChaosEngine _engine;
+    private readonly ConditionalWeakTable<DbCommand, ReaderFault> _breaking = [];
 
     public ChaosDbInterceptor(ChaosEngine engine)
     {
@@ -33,13 +35,13 @@ internal sealed class ChaosDbInterceptor : DbCommandInterceptor, IDbConnectionIn
 
     public override InterceptionResult<DbDataReader> ReaderExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result)
     {
-        Before(Call("ExecuteReader", command));
+        Remember(command, Before(Call("ExecuteReader", command)));
         return result;
     }
 
     public override async ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken cancellationToken = default)
     {
-        await BeforeAsync(Call("ExecuteReader", command), cancellationToken).ConfigureAwait(false);
+        Remember(command, await BeforeAsync(Call("ExecuteReader", command), cancellationToken).ConfigureAwait(false));
         return result;
     }
 
@@ -70,13 +72,13 @@ internal sealed class ChaosDbInterceptor : DbCommandInterceptor, IDbConnectionIn
     public override DbDataReader ReaderExecuted(DbCommand command, CommandExecutedEventData eventData, DbDataReader result)
     {
         _engine.CallSucceeded(Call("ExecuteReader", command));
-        return result;
+        return Break(command, result);
     }
 
     public override ValueTask<DbDataReader> ReaderExecutedAsync(DbCommand command, CommandExecutedEventData eventData, DbDataReader result, CancellationToken cancellationToken = default)
     {
         _engine.CallSucceeded(Call("ExecuteReader", command));
-        return new(result);
+        return new(Break(command, result));
     }
 
     public override object? ScalarExecuted(DbCommand command, CommandExecutedEventData eventData, object? result)
@@ -176,21 +178,28 @@ internal sealed class ChaosDbInterceptor : DbCommandInterceptor, IDbConnectionIn
 
     private static SqlChaosCall Call(string operation, DbCommand command) => new(operation, command.CommandText ?? string.Empty);
 
-    private void Before(SqlChaosCall call)
+    private Fault? Before(SqlChaosCall call) => Supported(_engine.BeforeCall(call));
+
+    private async ValueTask<Fault?> BeforeAsync(SqlChaosCall call, CancellationToken cancellationToken) =>
+        Supported(await _engine.BeforeCallAsync(call, cancellationToken).ConfigureAwait(false));
+
+    private static Fault? Supported(Fault? fault) =>
+        fault is null or ReaderFault ? fault : throw Unsupported(fault);
+
+    private void Remember(DbCommand command, Fault? fault)
     {
-        if (_engine.BeforeCall(call) is { } fault)
+        if (fault is ReaderFault breaking)
         {
-            throw Unsupported(fault);
+            _breaking.AddOrUpdate(command, breaking);
+        }
+        else
+        {
+            _breaking.Remove(command);
         }
     }
 
-    private async ValueTask BeforeAsync(SqlChaosCall call, CancellationToken cancellationToken)
-    {
-        if (await _engine.BeforeCallAsync(call, cancellationToken).ConfigureAwait(false) is { } fault)
-        {
-            throw Unsupported(fault);
-        }
-    }
+    private DbDataReader Break(DbCommand command, DbDataReader reader) =>
+        _breaking.TryGetValue(command, out var breaking) && _breaking.Remove(command) ? breaking.Wrap(reader) : reader;
 
     private static NotSupportedException Unsupported(Fault fault) =>
         new($"The fault '{fault.Name}' is not supported by the EF Core interceptor.");

@@ -136,7 +136,8 @@ internal sealed class ChaosServiceBusSender : ServiceBusSender
     private async Task SendAsync(IReadOnlyList<ServiceBusMessage> messages, Func<Task> send, CancellationToken cancellationToken)
     {
         var call = Call("Send", messages);
-        if (await _engine.BeforeCallAsync(call, cancellationToken).ConfigureAwait(false) is DropFault)
+        var fault = await _engine.BeforeCallAsync(call, cancellationToken).ConfigureAwait(false);
+        if (fault is DropFault)
         {
             return;
         }
@@ -144,6 +145,11 @@ internal sealed class ChaosServiceBusSender : ServiceBusSender
         await Complete(call, async () =>
         {
             await send().ConfigureAwait(false);
+            if (fault is DuplicateFault)
+            {
+                await send().ConfigureAwait(false);
+            }
+
             return true;
         }).ConfigureAwait(false);
     }

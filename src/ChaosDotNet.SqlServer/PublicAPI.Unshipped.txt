@@ -5,6 +5,8 @@ static ChaosDotNet.SqlServerFaults.ConnectionReset.get -> System.Func<System.Exc
 static ChaosDotNet.SqlServerFaults.Create(int number, string! message, byte errorClass = 16, byte state = 1) -> Microsoft.Data.SqlClient.SqlException!
 static ChaosDotNet.SqlServerFaults.DatabaseUnavailable.get -> System.Func<System.Exception!>!
 static ChaosDotNet.SqlServerFaults.Deadlock.get -> System.Func<System.Exception!>!
+static ChaosDotNet.SqlServerFaults.RandomTransient.get -> System.Func<System.Exception!>!
 static ChaosDotNet.SqlServerFaults.ServiceBusy.get -> System.Func<System.Exception!>!
 static ChaosDotNet.SqlServerFaults.Timeout.get -> System.Func<System.Exception!>!
 static ChaosDotNet.SqlServerFaults.UniqueConstraintViolation.get -> System.Func<System.Exception!>!
+static ChaosDotNet.SqlServerFaults.UseSqlServerFaults(this ChaosDotNet.Factories.SqlFactory! factory) -> ChaosDotNet.Factories.SqlFactory!

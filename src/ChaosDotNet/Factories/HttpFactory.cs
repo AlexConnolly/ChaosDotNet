@@ -1,6 +1,3 @@
-using System.Net;
-using System.Net.Sockets;
-
 namespace ChaosDotNet.Factories;
 
 /// <summary>A request made through an <see cref="HttpFactory"/> veneer.</summary>
@@ -71,84 +68,9 @@ public sealed class HttpFactory : ChaosFactory<HttpFactory, HttpChaosCall>
         Engine.Start();
         return handler;
     }
-}
-
-/// <summary>HTTP faults for <see cref="WindowBuilder{TSelf,TCall}"/> on an <see cref="HttpFactory"/>.</summary>
-public static class HttpFaults
-{
-    /// <summary>Each request gets a fake response with this status code. It does not reach the real server.</summary>
-    /// <param name="window">The window.</param>
-    /// <param name="status">The status code.</param>
-    /// <param name="retryAfterSeconds">When more than zero, adds a <c>Retry-After</c> header.</param>
-    public static HttpFactory Respond(this WindowBuilder<HttpFactory, HttpChaosCall> window, HttpStatusCode status, int retryAfterSeconds = 0)
-    {
-        ArgumentNullException.ThrowIfNull(window);
-        return window.Inject(new HttpResponseFault(request =>
-        {
-            var response = new HttpResponseMessage(status) { RequestMessage = request, Content = new StringContent(string.Empty) };
-            if (retryAfterSeconds > 0)
-            {
-                response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(retryAfterSeconds));
-            }
-
-            return response;
-        }));
-    }
-
-    /// <summary>Each request gets the response built by <paramref name="response"/>. It does not reach the real server.</summary>
-    public static HttpFactory Respond(this WindowBuilder<HttpFactory, HttpChaosCall> window, Func<HttpRequestMessage, HttpResponseMessage> response)
-    {
-        ArgumentNullException.ThrowIfNull(window);
-        ArgumentNullException.ThrowIfNull(response);
-        return window.Inject(new HttpResponseFault(response));
-    }
-
-    /// <summary>Each request fails the way <see cref="HttpClient"/> fails when its timeout expires.</summary>
-    public static HttpFactory Timeout(this WindowBuilder<HttpFactory, HttpChaosCall> window)
-    {
-        ArgumentNullException.ThrowIfNull(window);
-        return window.Fail(() => new TaskCanceledException(
-            "The request was canceled due to the configured HttpClient.Timeout elapsing.",
-            new TimeoutException("The operation was canceled.")));
-    }
-
-    /// <summary>Each request fails the way it does when the server refuses the connection.</summary>
-    public static HttpFactory ConnectionRefused(this WindowBuilder<HttpFactory, HttpChaosCall> window)
-    {
-        ArgumentNullException.ThrowIfNull(window);
-        return window.Fail(call => new HttpRequestException(
-            HttpRequestError.ConnectionError,
-            $"No connection could be made because the target machine actively refused it. ({call.Request.RequestUri?.Authority})",
-            new SocketException((int)SocketError.ConnectionRefused)));
-    }
-
-    /// <summary>Each request fails the way it does when the server closes the connection before responding.</summary>
-    public static HttpFactory ConnectionClosed(this WindowBuilder<HttpFactory, HttpChaosCall> window)
-    {
-        ArgumentNullException.ThrowIfNull(window);
-        return window.Fail(() => new HttpRequestException(
-            HttpRequestError.ResponseEnded,
-            "An error occurred while sending the request.",
-            new IOException("The response ended prematurely.")));
-    }
-}
-
-/// <summary>A fault that returns a fake HTTP response.</summary>
-public sealed class HttpResponseFault : Fault
-{
-    private readonly Func<HttpRequestMessage, HttpResponseMessage> _response;
-
-    /// <summary>Creates the fault.</summary>
-    public HttpResponseFault(Func<HttpRequestMessage, HttpResponseMessage> response)
-    {
-        _response = response;
-    }
 
     /// <inheritdoc />
-    public override string Name => "Respond";
-
-    /// <summary>Builds the response for a request.</summary>
-    public HttpResponseMessage CreateResponse(HttpRequestMessage request) => _response(request);
+    protected override IEnumerable<MonkeyFault> DefaultMonkeyFaults() => [.. base.DefaultMonkeyFaults(), .. HttpChaos.Catalogue()];
 }
 
 internal sealed class ChaosHttpHandler : DelegatingHandler
@@ -169,16 +91,12 @@ internal sealed class ChaosHttpHandler : DelegatingHandler
             return respond.CreateResponse(request);
         }
 
-        if (fault is not null)
-        {
-            throw new NotSupportedException($"The fault '{fault.Name}' is not supported by HttpFactory.");
-        }
-
+        EnsureSupported(fault);
         try
         {
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             _engine.CallSucceeded(call);
-            return response;
+            return fault is BreakBodyFault ? await BreakAsync(response, cancellationToken).ConfigureAwait(false) : response;
         }
         catch (Exception ex)
         {
@@ -196,21 +114,44 @@ internal sealed class ChaosHttpHandler : DelegatingHandler
             return respond.CreateResponse(request);
         }
 
-        if (fault is not null)
-        {
-            throw new NotSupportedException($"The fault '{fault.Name}' is not supported by HttpFactory.");
-        }
-
+        EnsureSupported(fault);
         try
         {
             var response = base.Send(request, cancellationToken);
             _engine.CallSucceeded(call);
-            return response;
+            return fault is BreakBodyFault ? BreakAsync(response, cancellationToken).GetAwaiter().GetResult() : response;
         }
         catch (Exception ex)
         {
             _engine.CallFailed(call, ex);
             throw;
         }
+    }
+
+    private static void EnsureSupported(Fault? fault)
+    {
+        if (fault is not null and not BreakBodyFault)
+        {
+            throw new NotSupportedException($"The fault '{fault.Name}' is not supported by HttpFactory.");
+        }
+    }
+
+    private static async Task<HttpResponseMessage> BreakAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        var body = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+        if (body.Length == 0)
+        {
+            return response;
+        }
+
+        var broken = new StreamContent(new BreakingStream(new MemoryStream(body), body.Length / 2));
+        foreach (var header in response.Content.Headers)
+        {
+            broken.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
+
+        broken.Headers.ContentLength = null;
+        response.Content = broken;
+        return response;
     }
 }

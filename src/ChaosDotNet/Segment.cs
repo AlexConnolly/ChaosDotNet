@@ -35,6 +35,8 @@ internal sealed class Segment
 
     public double Rate { get; set; } = 1.0;
 
+    public Random? Random { get; init; }
+
     public int WindowIndex { get; set; } = -1;
 
     public bool IsBounded => Kind == SegmentKind.Repeating || End == WindowEnd.Duration;

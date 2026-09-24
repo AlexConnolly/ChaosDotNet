@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ChaosDotNet\ChaosDotNet.csproj" />
+    <ProjectReference Include="..\ChaosDotNet.Sql\ChaosDotNet.Sql.csproj" />
     <PackageReference Include="Npgsql" />
   </ItemGroup>
 

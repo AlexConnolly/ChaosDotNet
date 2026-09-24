@@ -29,4 +29,17 @@ public sealed class ProxyFactory<T> : ChaosFactory<ProxyFactory<T>, ProxyChaosCa
         Engine.Start();
         return veneer;
     }
+
+    /// <inheritdoc />
+    protected override IEnumerable<MonkeyFault> DefaultMonkeyFaults() =>
+    [
+        .. base.DefaultMonkeyFaults(),
+        MonkeyFault.RandomException(
+            "RandomException",
+            MonkeyFaultKind.Error,
+            () => new TimeoutException("The operation has timed out. (ChaosDotNet)"),
+            () => new IOException("Unable to read data from the transport connection. (ChaosDotNet)"),
+            () => new InvalidOperationException("The dependency returned an unexpected response. (ChaosDotNet)"),
+            () => new ObjectDisposedException("connection", "The connection was disposed. (ChaosDotNet)")),
+    ];
 }

@@ -50,6 +50,15 @@ public sealed class CacheFactory : ChaosFactory<CacheFactory, CacheChaosCall>
         Engine.Start();
         return veneer;
     }
+
+    /// <inheritdoc />
+    protected override IEnumerable<MonkeyFault> DefaultMonkeyFaults() =>
+    [
+        .. base.DefaultMonkeyFaults(),
+        new("Timeout", MonkeyFaultKind.Error, _ => new FailFault(call => CacheFaults.TimeoutException((CacheChaosCall)call)), 2),
+        new("Corrupt", MonkeyFaultKind.Weird, random => new CorruptFault(new Random(random.Next()))),
+        new("Miss", MonkeyFaultKind.DataLoss, _ => MissFault.Instance),
+    ];
 }
 
 /// <summary>Cache faults for a <see cref="CacheFactory"/> window.</summary>
@@ -66,7 +75,47 @@ public static class CacheFaults
     public static CacheFactory Timeout(this WindowBuilder<CacheFactory, CacheChaosCall> window)
     {
         ArgumentNullException.ThrowIfNull(window);
-        return window.Fail(call => new TimeoutException($"The cache did not respond to {call.Operation} '{call.Key}' in time."));
+        return window.Fail(TimeoutException);
+    }
+
+    /// <summary><c>Get</c> calls return random bytes instead of the stored value. Other calls pass through.</summary>
+    public static CacheFactory Corrupt(this WindowBuilder<CacheFactory, CacheChaosCall> window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        return window.Inject(new CorruptFault(new Random(window.Factory.Seed)));
+    }
+
+    internal static Exception TimeoutException(CacheChaosCall call) =>
+        new TimeoutException($"The cache did not respond to {call.Operation} '{call.Key}' in time.");
+}
+
+/// <summary>A fault that makes cache reads return random bytes.</summary>
+public sealed class CorruptFault : Fault
+{
+    private readonly Random _random;
+
+    /// <summary>Creates the fault.</summary>
+    public CorruptFault(Random random)
+    {
+        _random = random ?? throw new ArgumentNullException(nameof(random));
+    }
+
+    /// <inheritdoc />
+    public override string Name => "Corrupt";
+
+    /// <inheritdoc />
+    public override bool AppliesTo(ChaosCall call) => call is CacheChaosCall { Operation: "Get" };
+
+    /// <summary>The bytes a read returns.</summary>
+    public byte[] NextValue()
+    {
+        var bytes = new byte[32];
+        lock (_random)
+        {
+            _random.NextBytes(bytes);
+        }
+
+        return bytes;
     }
 }
 
@@ -100,9 +149,12 @@ internal sealed class ChaosDistributedCache : IDistributedCache
     public byte[]? Get(string key)
     {
         var call = new CacheChaosCall("Get", key);
-        if (_engine.BeforeCall(call) is MissFault)
+        switch (_engine.BeforeCall(call))
         {
-            return null;
+            case MissFault:
+                return null;
+            case CorruptFault corrupt:
+                return corrupt.NextValue();
         }
 
         try
@@ -121,9 +173,12 @@ internal sealed class ChaosDistributedCache : IDistributedCache
     public async Task<byte[]?> GetAsync(string key, CancellationToken token = default)
     {
         var call = new CacheChaosCall("Get", key);
-        if (await _engine.BeforeCallAsync(call, token).ConfigureAwait(false) is MissFault)
+        switch (await _engine.BeforeCallAsync(call, token).ConfigureAwait(false))
         {
-            return null;
+            case MissFault:
+                return null;
+            case CorruptFault corrupt:
+                return corrupt.NextValue();
         }
 
         try

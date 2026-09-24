@@ -9,3 +9,4 @@ static ChaosDotNet.NpgsqlFaults.StatementTimeout.get -> System.Func<System.Excep
 static ChaosDotNet.NpgsqlFaults.Timeout.get -> System.Func<System.Exception!>!
 static ChaosDotNet.NpgsqlFaults.TooManyConnections.get -> System.Func<System.Exception!>!
 static ChaosDotNet.NpgsqlFaults.UniqueViolation.get -> System.Func<System.Exception!>!
+static ChaosDotNet.NpgsqlFaults.UseNpgsqlFaults(this ChaosDotNet.Factories.SqlFactory! factory) -> ChaosDotNet.Factories.SqlFactory!

@@ -1,6 +1,7 @@
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using ChaosDotNet.Factories;
 
 namespace ChaosDotNet.Sql;
 
@@ -112,11 +113,49 @@ internal sealed class ChaosDbCommand : DbCommand
     public override Task<object?> ExecuteScalarAsync(CancellationToken cancellationToken) =>
         Engine.RunAsync(SqlCalls.For("ExecuteScalar", _inner), () => _inner.ExecuteScalarAsync(cancellationToken), cancellationToken);
 
-    protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) =>
-        Engine.Run(SqlCalls.For("ExecuteReader", _inner), () => _inner.ExecuteReader(behavior));
+    protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
+    {
+        var call = SqlCalls.For("ExecuteReader", _inner);
+        var fault = Engine.BeforeCall(call);
+        EnsureSupported(fault);
+        try
+        {
+            var reader = _inner.ExecuteReader(behavior);
+            Engine.CallSucceeded(call);
+            return fault is ReaderFault breaking ? breaking.Wrap(reader) : reader;
+        }
+        catch (Exception ex)
+        {
+            Engine.CallFailed(call, ex);
+            throw;
+        }
+    }
 
-    protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken) =>
-        Engine.RunAsync(SqlCalls.For("ExecuteReader", _inner), () => _inner.ExecuteReaderAsync(behavior, cancellationToken), cancellationToken);
+    protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+    {
+        var call = SqlCalls.For("ExecuteReader", _inner);
+        var fault = await Engine.BeforeCallAsync(call, cancellationToken).ConfigureAwait(false);
+        EnsureSupported(fault);
+        try
+        {
+            var reader = await _inner.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
+            Engine.CallSucceeded(call);
+            return fault is ReaderFault breaking ? breaking.Wrap(reader) : reader;
+        }
+        catch (Exception ex)
+        {
+            Engine.CallFailed(call, ex);
+            throw;
+        }
+    }
+
+    private static void EnsureSupported(Fault? fault)
+    {
+        if (fault is not null and not ReaderFault)
+        {
+            throw new NotSupportedException($"The fault '{fault.Name}' is not supported by SqlFactory.");
+        }
+    }
 
     protected override DbParameter CreateDbParameter() => _inner.CreateParameter();
 

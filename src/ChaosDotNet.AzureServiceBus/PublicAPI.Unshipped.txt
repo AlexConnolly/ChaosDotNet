@@ -1,5 +1,6 @@
 #nullable enable
 ChaosDotNet.Factories.DropFault
+ChaosDotNet.Factories.DuplicateFault
 ChaosDotNet.Factories.ServiceBusChaosCall
 ChaosDotNet.Factories.ServiceBusChaosCall.EntityPath.get -> string!
 ChaosDotNet.Factories.ServiceBusChaosCall.Messages.get -> System.Collections.Generic.IReadOnlyList<Azure.Messaging.ServiceBus.ServiceBusMessage!>!
@@ -12,9 +13,13 @@ ChaosDotNet.Factories.ServiceBusFactory.ServiceBusFactory(System.TimeProvider? c
 ChaosDotNet.Factories.ServiceBusFaults
 override ChaosDotNet.Factories.DropFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
 override ChaosDotNet.Factories.DropFault.Name.get -> string!
+override ChaosDotNet.Factories.DuplicateFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
+override ChaosDotNet.Factories.DuplicateFault.Name.get -> string!
 static ChaosDotNet.Factories.ServiceBusFaults.CommunicationProblem(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ServiceBusFactory!, ChaosDotNet.Factories.ServiceBusChaosCall!>! window) -> ChaosDotNet.Factories.ServiceBusFactory!
 static ChaosDotNet.Factories.ServiceBusFaults.Drop(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ServiceBusFactory!, ChaosDotNet.Factories.ServiceBusChaosCall!>! window) -> ChaosDotNet.Factories.ServiceBusFactory!
+static ChaosDotNet.Factories.ServiceBusFaults.Duplicate(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ServiceBusFactory!, ChaosDotNet.Factories.ServiceBusChaosCall!>! window) -> ChaosDotNet.Factories.ServiceBusFactory!
 static ChaosDotNet.Factories.ServiceBusFaults.LockLost(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ServiceBusFactory!, ChaosDotNet.Factories.ServiceBusChaosCall!>! window) -> ChaosDotNet.Factories.ServiceBusFactory!
+static ChaosDotNet.Factories.ServiceBusFaults.QuotaExceeded(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ServiceBusFactory!, ChaosDotNet.Factories.ServiceBusChaosCall!>! window) -> ChaosDotNet.Factories.ServiceBusFactory!
 static ChaosDotNet.Factories.ServiceBusFaults.ServiceBusy(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ServiceBusFactory!, ChaosDotNet.Factories.ServiceBusChaosCall!>! window) -> ChaosDotNet.Factories.ServiceBusFactory!
 static ChaosDotNet.Factories.ServiceBusFaults.Throw(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ServiceBusFactory!, ChaosDotNet.Factories.ServiceBusChaosCall!>! window, Azure.Messaging.ServiceBus.ServiceBusFailureReason reason, string? message = null) -> ChaosDotNet.Factories.ServiceBusFactory!
 static ChaosDotNet.Factories.ServiceBusFaults.Timeout(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ServiceBusFactory!, ChaosDotNet.Factories.ServiceBusChaosCall!>! window) -> ChaosDotNet.Factories.ServiceBusFactory!

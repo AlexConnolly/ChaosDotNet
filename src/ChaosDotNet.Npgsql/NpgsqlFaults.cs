@@ -1,3 +1,4 @@
+using ChaosDotNet.Factories;
 using Npgsql;
 
 namespace ChaosDotNet;
@@ -33,6 +34,24 @@ public static class NpgsqlFaults
     /// <summary>The client timed out waiting for the server. Transient.</summary>
     public static Func<Exception> Timeout { get; } = () =>
         new NpgsqlException("Exception while reading from stream", new TimeoutException("Timeout during reading attempt"));
+
+    /// <summary>
+    /// Replaces the factory's monkey catalogue with one that uses real Npgsql errors: deadlocks, serialization failures,
+    /// shutdowns, too many connections, statement timeouts, lost connections and readers that break midway.
+    /// </summary>
+    public static SqlFactory UseNpgsqlFaults(this SqlFactory factory)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+        return factory.WithMonkeyFaults(
+        [
+            MonkeyFault.Freeze,
+            MonkeyFault.Latency,
+            MonkeyFault.Jitter,
+            new MonkeyFault("AdminShutdown", MonkeyFaultKind.Outage, _ => new FailFault(_ => AdminShutdown())),
+            new MonkeyFault("TooManyConnections", MonkeyFaultKind.Outage, _ => new FailFault(_ => TooManyConnections())),
+            .. DbFaults.Catalogue(ConnectionLost, Timeout, Deadlock, SerializationFailure, StatementTimeout, UniqueViolation),
+        ]);
+    }
 
     /// <summary>Builds a <see cref="PostgresException"/>.</summary>
     /// <param name="sqlState">The five-character SQLSTATE code.</param>

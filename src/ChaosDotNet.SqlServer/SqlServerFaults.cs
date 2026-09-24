@@ -1,4 +1,5 @@
 using System.Reflection;
+using ChaosDotNet.Factories;
 using Microsoft.Data.SqlClient;
 
 namespace ChaosDotNet;
@@ -57,6 +58,32 @@ public static class SqlServerFaults
     public static Func<Exception> UniqueConstraintViolation { get; } = () =>
         Create(2627, "Violation of UNIQUE KEY constraint 'UQ_Orders'. Cannot insert duplicate key in object 'dbo.Orders'.", errorClass: 14);
 
+    /// <summary>
+    /// A transient error picked at random from the numbers EF Core and SqlClient retry on:
+    /// 1205, -2, 233, 4060, 10053, 10054, 10060, 10928, 10929, 40197, 40501, 40613, 49918.
+    /// </summary>
+    public static Func<Exception> RandomTransient { get; } = CreateRandomTransient(Random.Shared.Next());
+
+    private static readonly int[] TransientNumbers = [1205, -2, 233, 4060, 10053, 10054, 10060, 10928, 10929, 40197, 40501, 40613, 49918];
+
+    /// <summary>
+    /// Replaces the factory's monkey catalogue with one that uses real <see cref="SqlException"/> errors:
+    /// deadlocks, timeouts, an unavailable database, reset connections, random transient errors and readers that break midway.
+    /// </summary>
+    public static SqlFactory UseSqlServerFaults(this SqlFactory factory)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+        return factory.WithMonkeyFaults(
+        [
+            MonkeyFault.Freeze,
+            MonkeyFault.Latency,
+            MonkeyFault.Jitter,
+            new MonkeyFault("DatabaseUnavailable", MonkeyFaultKind.Outage, _ => new FailFault(_ => DatabaseUnavailable())),
+            new MonkeyFault("RandomTransient", MonkeyFaultKind.Error, random => new FailFault(_ => CreateRandomTransient(random.Next())())),
+            .. DbFaults.Catalogue(ConnectionReset, Timeout, Deadlock, ServiceBusy, UniqueConstraintViolation),
+        ]);
+    }
+
     /// <summary>Builds a <see cref="SqlException"/> with one error.</summary>
     /// <param name="number">The SQL Server error number.</param>
     /// <param name="message">The error message.</param>
@@ -69,6 +96,21 @@ public static class SqlServerFaults
         var errors = CollectionConstructor.Invoke(null);
         CollectionAdd.Invoke(errors, [error]);
         return (SqlException)CreateExceptionMethod.Invoke(null, [errors, "16.00.1000"])!;
+    }
+
+    private static Func<Exception> CreateRandomTransient(int seed)
+    {
+        var random = new Random(seed);
+        return () =>
+        {
+            int number;
+            lock (random)
+            {
+                number = TransientNumbers[random.Next(TransientNumbers.Length)];
+            }
+
+            return Create(number, $"A transient error occurred (error {number}). (ChaosDotNet)", errorClass: 20);
+        };
     }
 
     private static NotSupportedException Unsupported(string member) =>

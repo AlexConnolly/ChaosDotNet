@@ -15,6 +15,9 @@ public sealed class WindowBuilder<TSelf, TCall>
         _segment = segment;
     }
 
+    /// <summary>The factory the window belongs to.</summary>
+    public TSelf Factory => _factory;
+
     /// <summary>Calls block until the window ends, then continue to the real client. The call's <see cref="CancellationToken"/> still works.</summary>
     public TSelf Freeze() => Inject(FreezeFault.Instance);
 
@@ -42,6 +45,14 @@ public sealed class WindowBuilder<TSelf, TCall>
     /// <summary>Each call throws a new <typeparamref name="TException"/> and does not reach the real client.</summary>
     public TSelf Fail<TException>()
         where TException : Exception, new() => Inject(new FailFault(_ => new TException()));
+
+    /// <summary>Each call throws an exception picked at random from <paramref name="exceptions"/>, using the factory's seed.</summary>
+    public TSelf FailRandomly(params Func<Exception>[] exceptions)
+    {
+        ArgumentNullException.ThrowIfNull(exceptions);
+        ArgumentOutOfRangeException.ThrowIfZero(exceptions.Length);
+        return Inject(MonkeyFault.RandomFail(new Random(_factory.Engine.Seed), exceptions));
+    }
 
     /// <summary>Applies any fault. Factories use this to add their own faults as extension methods.</summary>
     public TSelf Inject(Fault fault)

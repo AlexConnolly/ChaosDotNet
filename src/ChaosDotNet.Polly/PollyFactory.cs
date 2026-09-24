@@ -51,6 +51,18 @@ public sealed class PollyFactory : ChaosFactory<PollyFactory, PollyChaosCall>
         Engine.Start();
         return strategy;
     }
+
+    /// <inheritdoc />
+    protected override IEnumerable<MonkeyFault> DefaultMonkeyFaults() =>
+    [
+        .. base.DefaultMonkeyFaults(),
+        MonkeyFault.RandomException(
+            "RandomException",
+            MonkeyFaultKind.Error,
+            () => new TimeoutException("The operation has timed out. (ChaosDotNet)"),
+            () => new HttpRequestException("An error occurred while sending the request. (ChaosDotNet)"),
+            () => new IOException("Unable to read data from the transport connection. (ChaosDotNet)")),
+    ];
 }
 
 /// <summary>Adds <see cref="PollyFactory"/> timelines to Polly pipelines.</summary>

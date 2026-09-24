@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
-    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" VersionOverride="10.10.0" />
     <Using Include="Xunit" />
     <Using Include="ChaosDotNet" />
     <Using Include="ChaosDotNet.Factories" />

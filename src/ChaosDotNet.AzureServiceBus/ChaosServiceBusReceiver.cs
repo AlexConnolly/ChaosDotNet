@@ -102,7 +102,8 @@ internal sealed class ChaosServiceBusProcessor : ServiceBusProcessor
     protected override async Task OnProcessMessageAsync(ProcessMessageEventArgs args)
     {
         var call = new ServiceBusChaosCall("Process", EntityPath, receivedMessage: args.Message);
-        if (await _engine.BeforeCallAsync(call, args.CancellationToken).ConfigureAwait(false) is DropFault)
+        var fault = await _engine.BeforeCallAsync(call, args.CancellationToken).ConfigureAwait(false);
+        if (fault is DropFault)
         {
             return;
         }
@@ -110,6 +111,11 @@ internal sealed class ChaosServiceBusProcessor : ServiceBusProcessor
         try
         {
             await base.OnProcessMessageAsync(args).ConfigureAwait(false);
+            if (fault is DuplicateFault)
+            {
+                await base.OnProcessMessageAsync(args).ConfigureAwait(false);
+            }
+
             _engine.CallSucceeded(call);
         }
         catch (Exception ex)

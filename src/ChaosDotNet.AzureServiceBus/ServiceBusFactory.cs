@@ -71,6 +71,23 @@ public sealed class ServiceBusFactory : ChaosFactory<ServiceBusFactory, ServiceB
         Engine.Start();
         return veneer;
     }
+
+    /// <inheritdoc />
+    protected override IEnumerable<MonkeyFault> DefaultMonkeyFaults() =>
+    [
+        .. base.DefaultMonkeyFaults(),
+        Reason("CommunicationProblem", MonkeyFaultKind.Outage, ServiceBusFailureReason.ServiceCommunicationProblem, 2),
+        Reason("ServiceBusy", MonkeyFaultKind.Error, ServiceBusFailureReason.ServiceBusy),
+        Reason("Timeout", MonkeyFaultKind.Error, ServiceBusFailureReason.ServiceTimeout),
+        Reason("LockLost", MonkeyFaultKind.Error, ServiceBusFailureReason.MessageLockLost),
+        Reason("QuotaExceeded", MonkeyFaultKind.Error, ServiceBusFailureReason.QuotaExceeded),
+        Reason("MessageSizeExceeded", MonkeyFaultKind.Weird, ServiceBusFailureReason.MessageSizeExceeded),
+        new("Duplicate", MonkeyFaultKind.Weird, _ => DuplicateFault.Instance, 2),
+        new("Drop", MonkeyFaultKind.DataLoss, _ => DropFault.Instance),
+    ];
+
+    private static MonkeyFault Reason(string name, MonkeyFaultKind kind, ServiceBusFailureReason reason, double weight = 1) =>
+        new(name, kind, _ => new FailFault(call => ServiceBusFaults.Exception((ServiceBusChaosCall)call, reason, null)), weight);
 }
 
 /// <summary>Service Bus faults for a <see cref="ServiceBusFactory"/> window.</summary>
@@ -80,11 +97,27 @@ public static class ServiceBusFaults
     public static ServiceBusFactory Throw(this WindowBuilder<ServiceBusFactory, ServiceBusChaosCall> window, ServiceBusFailureReason reason, string? message = null)
     {
         ArgumentNullException.ThrowIfNull(window);
-        return window.Fail(call => new ServiceBusException(
-            message ?? $"The {call.Operation} operation on '{call.EntityPath}' failed: {reason} (ChaosDotNet).",
-            reason,
-            call.EntityPath));
+        return window.Fail(call => Exception(call, reason, message));
     }
+
+    /// <summary>Each call fails with <see cref="ServiceBusFailureReason.QuotaExceeded"/>, as when a queue is full.</summary>
+    public static ServiceBusFactory QuotaExceeded(this WindowBuilder<ServiceBusFactory, ServiceBusChaosCall> window) =>
+        window.Throw(ServiceBusFailureReason.QuotaExceeded);
+
+    /// <summary>
+    /// Sent messages are sent twice, and processed messages run the handler twice, as at-least-once delivery allows.
+    /// Other operations pass through.
+    /// </summary>
+    public static ServiceBusFactory Duplicate(this WindowBuilder<ServiceBusFactory, ServiceBusChaosCall> window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        return window.Inject(DuplicateFault.Instance);
+    }
+
+    internal static ServiceBusException Exception(ServiceBusChaosCall call, ServiceBusFailureReason reason, string? message) => new(
+        message ?? $"The {call.Operation} operation on '{call.EntityPath}' failed: {reason} (ChaosDotNet).",
+        reason,
+        call.EntityPath);
 
     /// <summary>Each call fails with a transient <see cref="ServiceBusFailureReason.ServiceBusy"/> error.</summary>
     public static ServiceBusFactory ServiceBusy(this WindowBuilder<ServiceBusFactory, ServiceBusChaosCall> window) =>
@@ -111,6 +144,22 @@ public static class ServiceBusFaults
         ArgumentNullException.ThrowIfNull(window);
         return window.Inject(DropFault.Instance);
     }
+}
+
+/// <summary>A fault that delivers messages twice.</summary>
+public sealed class DuplicateFault : Fault
+{
+    internal static readonly DuplicateFault Instance = new();
+
+    private DuplicateFault()
+    {
+    }
+
+    /// <inheritdoc />
+    public override string Name => "Duplicate";
+
+    /// <inheritdoc />
+    public override bool AppliesTo(ChaosCall call) => call.Operation is "Send" or "Process";
 }
 
 /// <summary>A fault that silently loses messages.</summary>

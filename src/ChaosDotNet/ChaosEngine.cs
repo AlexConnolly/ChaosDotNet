@@ -43,6 +43,22 @@ public sealed class ChaosEngine
     /// <summary>The clock the timeline runs on.</summary>
     public TimeProvider Clock { get; }
 
+    /// <summary>The dependency's name, for plans and logs.</summary>
+    public string Name { get; internal set; } = "dependency";
+
+    internal Func<IReadOnlyList<MonkeyFault>> MonkeyFaults { get; set; } = () => [];
+
+    internal bool HasSegments
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _segments.Count > 0;
+            }
+        }
+    }
+
     /// <summary>The seed for <c>Flaky</c> and <c>Jitter</c>. The same seed and calls give the same faults.</summary>
     public int Seed { get; }
 
@@ -341,7 +357,7 @@ public sealed class ChaosEngine
 
             _segmentCalls++;
 
-            if (segment.Rate < 1.0 && _random.NextDouble() >= segment.Rate)
+            if (segment.Rate < 1.0 && (segment.Random ?? _random).NextDouble() >= segment.Rate)
             {
                 _log.Add(new ChaosEvent(now, ChaosEventKind.FaultSkipped, segment.WindowIndex, call.Operation));
                 return default;

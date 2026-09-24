@@ -4,7 +4,7 @@ namespace ChaosDotNet;
 /// Runs several factories on one clock. All factories built with the same scenario start their
 /// timelines at the same moment: on <see cref="Start"/>, or on the first <c>Create...</c> call of any of them.
 /// </summary>
-public sealed class ChaosScenario
+public class ChaosScenario
 {
     private readonly object _gate = new();
     private readonly List<ChaosEngine> _engines = [];
@@ -50,6 +50,7 @@ public sealed class ChaosScenario
             }
 
             var at = Clock.GetUtcNow();
+            OnStarting(_engines);
             foreach (var engine in _engines)
             {
                 engine.StartAt(at);
@@ -57,6 +58,22 @@ public sealed class ChaosScenario
 
             _startedAt = at;
         }
+    }
+
+    /// <summary>The engines registered so far, in registration order.</summary>
+    internal IReadOnlyList<ChaosEngine> Engines
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _engines.ToArray();
+            }
+        }
+    }
+
+    private protected virtual void OnStarting(IReadOnlyList<ChaosEngine> engines)
+    {
     }
 
     internal int NextSeed()
@@ -72,6 +89,7 @@ public sealed class ChaosScenario
         lock (_gate)
         {
             _engines.Add(engine);
+            engine.Name = $"dependency{_engines.Count}";
             if (_startedAt is { } at)
             {
                 engine.StartAt(at);

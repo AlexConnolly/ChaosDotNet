@@ -11,13 +11,15 @@ public abstract class ChaosFactory<TSelf, TCall>
     where TCall : ChaosCall
 {
     private Func<ChaosCall, bool>? _pendingWhen;
+    private List<MonkeyFault>? _monkeyFaults;
 
     /// <summary>Creates a factory with its own clock and seed.</summary>
     /// <param name="clock">The clock the timeline runs on. Defaults to <see cref="TimeProvider.System"/>.</param>
     /// <param name="seed">The seed for <c>Flaky</c> and <c>Jitter</c>. Defaults to a random seed, shown in <see cref="Seed"/>.</param>
     protected ChaosFactory(TimeProvider? clock = null, int? seed = null)
     {
-        Engine = new ChaosEngine(clock, seed);
+        Engine = new ChaosEngine(clock, seed) { Name = DefaultName() };
+        Engine.MonkeyFaults = () => MonkeyFaults;
     }
 
     /// <summary>Creates a factory that shares the scenario's clock and start time.</summary>
@@ -25,6 +27,8 @@ public abstract class ChaosFactory<TSelf, TCall>
     {
         ArgumentNullException.ThrowIfNull(scenario);
         Engine = new ChaosEngine(scenario);
+        Engine.Name = $"{DefaultName()}{Engine.Name["dependency".Length..]}";
+        Engine.MonkeyFaults = () => MonkeyFaults;
     }
 
     /// <summary>The engine that runs the timeline. Veneers use it; tests normally do not.</summary>
@@ -35,6 +39,12 @@ public abstract class ChaosFactory<TSelf, TCall>
 
     /// <summary>A snapshot of the timeline log.</summary>
     public IReadOnlyList<ChaosEvent> Log => Engine.Log;
+
+    /// <summary>The dependency's name, shown in <see cref="ChaosMonkey"/> plans. Set it with <see cref="Named"/>.</summary>
+    public string Name => Engine.Name;
+
+    /// <summary>The faults a <see cref="ChaosMonkey"/> can choose for this dependency.</summary>
+    public IReadOnlyList<MonkeyFault> MonkeyFaults => _monkeyFaults ?? DefaultMonkeyFaults().ToList();
 
     private TSelf Self => (TSelf)this;
 
@@ -47,6 +57,30 @@ public abstract class ChaosFactory<TSelf, TCall>
 
     /// <summary>Checks what happened on the timeline.</summary>
     public ChaosVerifier Verify() => new(Engine);
+
+    /// <summary>Names the dependency, for example <c>orders</c>. The name appears in <see cref="ChaosMonkey"/> plans.</summary>
+    public TSelf Named(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        Engine.Name = name;
+        return Self;
+    }
+
+    /// <summary>Replaces the faults a <see cref="ChaosMonkey"/> can choose for this dependency. With no faults, the monkey leaves it alone.</summary>
+    public TSelf WithMonkeyFaults(params MonkeyFault[] faults)
+    {
+        ArgumentNullException.ThrowIfNull(faults);
+        _monkeyFaults = [.. faults];
+        return Self;
+    }
+
+    /// <summary>Adds faults a <see cref="ChaosMonkey"/> can choose for this dependency.</summary>
+    public TSelf AddMonkeyFaults(params MonkeyFault[] faults)
+    {
+        ArgumentNullException.ThrowIfNull(faults);
+        _monkeyFaults = [.. MonkeyFaults, .. faults];
+        return Self;
+    }
 
     /// <summary>Does nothing. Use it to make a chain of windows easier to read.</summary>
     public TSelf Then() => Self;
@@ -124,6 +158,13 @@ public abstract class ChaosFactory<TSelf, TCall>
         return Self;
     }
 
+    /// <summary>
+    /// The faults a <see cref="ChaosMonkey"/> can choose when none are set with <see cref="WithMonkeyFaults"/>.
+    /// The base catalogue is <see cref="MonkeyFault.Freeze"/>, <see cref="MonkeyFault.Latency"/> and <see cref="MonkeyFault.Jitter"/>.
+    /// Derived factories add their own errors and odd behaviour.
+    /// </summary>
+    protected virtual IEnumerable<MonkeyFault> DefaultMonkeyFaults() => [MonkeyFault.Freeze, MonkeyFault.Latency, MonkeyFault.Jitter];
+
     internal TSelf AddWindow(Segment segment)
     {
         Engine.AddSegment(segment);
@@ -135,6 +176,15 @@ public abstract class ChaosFactory<TSelf, TCall>
         var when = _pendingWhen;
         _pendingWhen = null;
         return when;
+    }
+
+    private static string DefaultName()
+    {
+        var name = typeof(TSelf).Name;
+        var tick = name.IndexOf('`', StringComparison.Ordinal);
+        name = tick < 0 ? name : name[..tick];
+        name = name.EndsWith("Factory", StringComparison.Ordinal) ? name[..^7] : name;
+        return name.ToLowerInvariant();
     }
 
     private WindowBuilder<TSelf, TCall> Window(WindowEnd end, TimeSpan duration = default, int calls = 0, Func<bool>? until = null) =>
