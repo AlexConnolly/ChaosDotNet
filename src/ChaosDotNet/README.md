@@ -146,6 +146,22 @@ await request;
 
 To start several factories together on one clock, pass a `ChaosScenario` to each and call `scenario.Start()`.
 
+## Add the monkey to what you already have
+
+Every factory wraps an instance you already have. The instance keeps working as before; the chaos runs around each call.
+
+```csharp
+var monkey = new ChaosMonkey();
+
+DbConnection connection = new SqlFactory(monkey).Named("orders").CreateConnection(myConnection);
+HttpClient http = new HttpFactory(monkey).Named("payments").CreateClient(inner: myHandler);
+IPaymentGateway gateway = new ProxyFactory<IPaymentGateway>(monkey).Named("gateway").Create(myGateway);
+
+await monkey.RunAsync(() => RunTheApp(connection, http, gateway));
+```
+
+Use a factory without a monkey to script the chaos instead, or `new ChaosSubject<T>().Setup(...).Create(myInstance)` to override some methods and pass the rest to your instance.
+
 ## Chaos monkey
 
 A `ChaosMonkey` is a scenario that breaks its factories at random. It picks which dependencies break, when, how long for and how (outages, slowness, errors and odd responses), sometimes several at once. A seed decides the plan, so the same seed gives the same chaos.

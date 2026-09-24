@@ -32,6 +32,22 @@ Smallest failing plan (1 of 6 incident(s)):
 Reproduce: set CHAOS_SEED=3 CHAOS_INCIDENTS=3
 ```
 
+## Add chaos to what you already have
+
+Every factory wraps an instance you already have. The instance keeps working as before; the chaos runs around each call.
+
+```csharp
+var monkey = new ChaosMonkey();
+
+DbConnection connection = new SqlFactory(monkey).Named("orders").CreateConnection(myConnection);
+HttpClient http = new HttpFactory(monkey).Named("payments").CreateClient(inner: myHandler);
+IPaymentGateway gateway = new ProxyFactory<IPaymentGateway>(monkey).Named("gateway").Create(myGateway);
+
+await monkey.RunAsync(() => RunTheApp(connection, http, gateway));
+```
+
+Use a factory without a monkey to script the chaos instead, or `new ChaosSubject<T>().Setup(...).Create(myInstance)` to override some methods and pass the rest to your instance.
+
 ## Why
 
 Code that talks to databases, queues, caches and APIs usually has retry, timeout and fallback logic. That logic rarely runs in tests, because the dependencies never fail there. ChaosDotNet makes them fail: on a script you write, or at random like Netflix's Chaos Monkey, but from a seed, so every failure can be replayed.
