@@ -8,6 +8,7 @@
     <ProjectReference Include="..\..\src\ChaosDotNet.EntityFrameworkCore\ChaosDotNet.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\src\ChaosDotNet.Redis\ChaosDotNet.Redis.csproj" />
     <ProjectReference Include="..\..\src\ChaosDotNet.Caching\ChaosDotNet.Caching.csproj" />
+    <ProjectReference Include="..\..\src\ChaosDotNet.AzureServiceBus\ChaosDotNet.AzureServiceBus.csproj" />
   </ItemGroup>
 
   <ItemGroup>

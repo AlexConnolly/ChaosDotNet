@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/ChaosDotNet.AzureServiceBus/ChaosDotNet.AzureServiceBus.csproj" />
     <Project Path="src/ChaosDotNet.Caching/ChaosDotNet.Caching.csproj" />
     <Project Path="src/ChaosDotNet.EntityFrameworkCore/ChaosDotNet.EntityFrameworkCore.csproj" />
     <Project Path="src/ChaosDotNet.Npgsql/ChaosDotNet.Npgsql.csproj" />

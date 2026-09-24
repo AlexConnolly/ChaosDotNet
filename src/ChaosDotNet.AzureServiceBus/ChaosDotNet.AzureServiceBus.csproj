@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ServiceBusFactory for ChaosDotNet: ServiceBusClient veneers whose senders, receivers and processors follow a chaos timeline, with real ServiceBusException faults and dropped messages.</Description>
+    <PackageTags>$(PackageTags);azure;servicebus;messaging</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChaosDotNet\ChaosDotNet.csproj" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" />
+  </ItemGroup>
+
+</Project>
