@@ -1,5 +1,7 @@
 #nullable enable
 abstract ChaosDotNet.Fault.Name.get -> string!
+ChaosDotNet.Arg
+ChaosDotNet.AsyncSetupExtensions
 ChaosDotNet.ChaosAssertionException
 ChaosDotNet.ChaosAssertionException.ChaosAssertionException(string! message) -> void
 ChaosDotNet.ChaosCall
@@ -165,6 +167,22 @@ ChaosDotNet.ChaosScenario.Clock.get -> System.TimeProvider!
 ChaosDotNet.ChaosScenario.Seed.get -> int
 ChaosDotNet.ChaosScenario.Start() -> void
 ChaosDotNet.ChaosScenario.StartedAt.get -> System.DateTimeOffset?
+ChaosDotNet.ChaosSubject<T>
+ChaosDotNet.ChaosSubject<T>.Calls.get -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.SubjectCall!>!
+ChaosDotNet.ChaosSubject<T>.ChaosSubject(ChaosDotNet.ChaosScenario! scenario, bool strict = false) -> void
+ChaosDotNet.ChaosSubject<T>.ChaosSubject(System.TimeProvider? clock = null, int? seed = null, bool strict = false) -> void
+ChaosDotNet.ChaosSubject<T>.Create() -> T!
+ChaosDotNet.ChaosSubject<T>.Create(T? inner) -> T!
+ChaosDotNet.ChaosSubject<T>.DidNotReceive(System.Linq.Expressions.Expression<System.Action<T!>!>! call) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.ChaosSubject<T>.DidNotReceive<TResult>(System.Linq.Expressions.Expression<System.Func<T!, TResult>!>! call) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.ChaosSubject<T>.Received(System.Linq.Expressions.Expression<System.Action<T!>!>! call, ChaosDotNet.Times times) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.ChaosSubject<T>.Received<TResult>(System.Linq.Expressions.Expression<System.Func<T!, TResult>!>! call, ChaosDotNet.Times times) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.ChaosSubject<T>.Setup(System.Linq.Expressions.Expression<System.Action<T!>!>! call) -> ChaosDotNet.VoidSetupBuilder<T!>!
+ChaosDotNet.ChaosSubject<T>.Setup<TResult>(System.Linq.Expressions.Expression<System.Func<T!, TResult>!>! call) -> ChaosDotNet.SetupBuilder<T!, TResult>!
+ChaosDotNet.ChaosSubject<T>.When(System.Linq.Expressions.Expression<System.Action<T!>!>! call) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.ChaosSubject<T>.When<TResult>(System.Linq.Expressions.Expression<System.Func<T!, TResult>!>! call) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.ChaosSubjectException
+ChaosDotNet.ChaosSubjectException.ChaosSubjectException(string! message) -> void
 ChaosDotNet.ChaosVerifier
 ChaosDotNet.ChaosVerifier.CallsSucceeded(int? atLeast = null, int? atMost = null, int? exactly = null) -> ChaosDotNet.ChaosVerifier!
 ChaosDotNet.ChaosVerifier.FaultsInjected(int? atLeast = null, int? atMost = null, int? exactly = null, int? window = null) -> ChaosDotNet.ChaosVerifier!
@@ -213,6 +231,11 @@ ChaosDotNet.MonkeyFaultKind.Error = 2 -> ChaosDotNet.MonkeyFaultKind
 ChaosDotNet.MonkeyFaultKind.Outage = 0 -> ChaosDotNet.MonkeyFaultKind
 ChaosDotNet.MonkeyFaultKind.Slowness = 1 -> ChaosDotNet.MonkeyFaultKind
 ChaosDotNet.MonkeyFaultKind.Weird = 3 -> ChaosDotNet.MonkeyFaultKind
+ChaosDotNet.OddValueFault
+ChaosDotNet.OddValueFault.NextValue(System.Type! returnType) -> object?
+ChaosDotNet.OddValueFault.OddValueFault(System.Random! random) -> void
+ChaosDotNet.OddValueFaults
+ChaosDotNet.OddValues
 ChaosDotNet.Proxies.ChaosDispatchProxy
 ChaosDotNet.Proxies.ChaosDispatchProxy.ChaosDispatchProxy() -> void
 ChaosDotNet.Proxies.ChaosProxy
@@ -232,11 +255,44 @@ ChaosDotNet.Proxies.ProxyChaosCall.Method.get -> System.Reflection.MethodInfo!
 ChaosDotNet.Proxies.ProxyChaosCall.ProxyChaosCall(System.Reflection.MethodInfo! method, object?[]! arguments) -> void
 ChaosDotNet.RepeatBuilder<TSelf, TCall>
 ChaosDotNet.RepeatBuilder<TSelf, TCall>.For(double amount, ChaosDotNet.TimeUnit unit) -> ChaosDotNet.WindowBuilder<TSelf!, TCall!>!
+ChaosDotNet.SetupBuilder<T, TResult>
+ChaosDotNet.SetupBuilder<T, TResult>.Callback(System.Action! callback) -> ChaosDotNet.SetupBuilder<T!, TResult>!
+ChaosDotNet.SetupBuilder<T, TResult>.Callback<T1, T2>(System.Action<T1, T2>! callback) -> ChaosDotNet.SetupBuilder<T!, TResult>!
+ChaosDotNet.SetupBuilder<T, TResult>.Callback<T1>(System.Action<T1>! callback) -> ChaosDotNet.SetupBuilder<T!, TResult>!
+ChaosDotNet.SetupBuilder<T, TResult>.Done() -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.SetupBuilder<T, TResult>.Returns(System.Func<TResult>! value) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.SetupBuilder<T, TResult>.Returns(TResult value) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.SetupBuilder<T, TResult>.Returns<T1, T2, T3>(System.Func<T1, T2, T3, TResult>! value) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.SetupBuilder<T, TResult>.Returns<T1, T2>(System.Func<T1, T2, TResult>! value) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.SetupBuilder<T, TResult>.Returns<T1>(System.Func<T1, TResult>! value) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.SetupBuilder<T, TResult>.ReturnsInOrder(params TResult[]! values) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.SetupBuilder<T, TResult>.Throws(System.Func<System.Exception!>! exception) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.SetupBuilder<T, TResult>.Throws<TException>() -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.SubjectBehaviourProxy
+ChaosDotNet.SubjectBehaviourProxy.SubjectBehaviourProxy() -> void
+ChaosDotNet.SubjectCall
+ChaosDotNet.SubjectCall.SubjectCall(System.Reflection.MethodInfo! method, object?[]! arguments) -> void
+ChaosDotNet.Times
+ChaosDotNet.Times.Deconstruct(out int Min, out int Max) -> void
+ChaosDotNet.Times.Equals(ChaosDotNet.Times other) -> bool
+ChaosDotNet.Times.Max.get -> int
+ChaosDotNet.Times.Max.init -> void
+ChaosDotNet.Times.Min.get -> int
+ChaosDotNet.Times.Min.init -> void
+ChaosDotNet.Times.Times() -> void
+ChaosDotNet.Times.Times(int Min, int Max) -> void
 ChaosDotNet.TimeUnit
 ChaosDotNet.TimeUnit.Hours = 3 -> ChaosDotNet.TimeUnit
 ChaosDotNet.TimeUnit.Milliseconds = 0 -> ChaosDotNet.TimeUnit
 ChaosDotNet.TimeUnit.Minutes = 2 -> ChaosDotNet.TimeUnit
 ChaosDotNet.TimeUnit.Seconds = 1 -> ChaosDotNet.TimeUnit
+ChaosDotNet.VoidSetupBuilder<T>
+ChaosDotNet.VoidSetupBuilder<T>.Callback(System.Action! callback) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.VoidSetupBuilder<T>.Callback<T1, T2>(System.Action<T1, T2>! callback) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.VoidSetupBuilder<T>.Callback<T1>(System.Action<T1>! callback) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.VoidSetupBuilder<T>.DoesNothing() -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.VoidSetupBuilder<T>.Throws(System.Func<System.Exception!>! exception) -> ChaosDotNet.ChaosSubject<T!>!
+ChaosDotNet.VoidSetupBuilder<T>.Throws<TException>() -> ChaosDotNet.ChaosSubject<T!>!
 ChaosDotNet.WindowBuilder<TSelf, TCall>
 ChaosDotNet.WindowBuilder<TSelf, TCall>.Factory.get -> TSelf!
 ChaosDotNet.WindowBuilder<TSelf, TCall>.Fail(System.Func<System.Exception!>! exception) -> TSelf!
@@ -268,7 +324,28 @@ override ChaosDotNet.Fault.ToString() -> string!
 override ChaosDotNet.FreezeFault.Name.get -> string!
 override ChaosDotNet.JitterFault.Name.get -> string!
 override ChaosDotNet.LatencyFault.Name.get -> string!
+override ChaosDotNet.OddValueFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
+override ChaosDotNet.OddValueFault.Name.get -> string!
 override ChaosDotNet.Proxies.ChaosDispatchProxy.Invoke(System.Reflection.MethodInfo? targetMethod, object?[]? args) -> object?
+override ChaosDotNet.SubjectBehaviourProxy.Invoke(System.Reflection.MethodInfo? targetMethod, object?[]? args) -> object?
+override ChaosDotNet.SubjectCall.ToString() -> string!
+override ChaosDotNet.Times.GetHashCode() -> int
+override ChaosDotNet.Times.ToString() -> string!
+static ChaosDotNet.Arg.Any<T>() -> T
+static ChaosDotNet.Arg.Is<T>(System.Func<T, bool>! predicate) -> T
+static ChaosDotNet.AsyncSetupExtensions.Returns<T, TValue, T1, T2, T3>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.Task<TValue>!>! setup, System.Func<T1, T2, T3, TValue>! value) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.Returns<T, TValue, T1, T2>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.Task<TValue>!>! setup, System.Func<T1, T2, TValue>! value) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.Returns<T, TValue, T1, T2>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.ValueTask<TValue>>! setup, System.Func<T1, T2, TValue>! value) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.Returns<T, TValue, T1>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.Task<TValue>!>! setup, System.Func<T1, TValue>! value) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.Returns<T, TValue, T1>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.ValueTask<TValue>>! setup, System.Func<T1, TValue>! value) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.Returns<T, TValue>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.Task<TValue>!>! setup, TValue value) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.Returns<T, TValue>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.ValueTask<TValue>>! setup, TValue value) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.ReturnsAsync<T, TValue, T1, T2>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.Task<TValue>!>! setup, System.Func<T1, T2, TValue>! value) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.ReturnsAsync<T, TValue, T1>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.Task<TValue>!>! setup, System.Func<T1, TValue>! value) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.ReturnsAsync<T, TValue>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.Task<TValue>!>! setup, TValue value) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.ReturnsAsync<T, TValue>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.ValueTask<TValue>>! setup, TValue value) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.ReturnsInOrder<T, TValue>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.Task<TValue>!>! setup, params TValue[]! values) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.AsyncSetupExtensions.ReturnsInOrder<T, TValue>(this ChaosDotNet.SetupBuilder<T!, System.Threading.Tasks.ValueTask<TValue>>! setup, params TValue[]! values) -> ChaosDotNet.ChaosSubject<T!>!
 static ChaosDotNet.ChaosEvent.operator !=(ChaosDotNet.ChaosEvent? left, ChaosDotNet.ChaosEvent? right) -> bool
 static ChaosDotNet.ChaosEvent.operator ==(ChaosDotNet.ChaosEvent? left, ChaosDotNet.ChaosEvent? right) -> bool
 static ChaosDotNet.ChaosExplorationFailure.operator !=(ChaosDotNet.ChaosExplorationFailure? left, ChaosDotNet.ChaosExplorationFailure? right) -> bool
@@ -295,7 +372,18 @@ static ChaosDotNet.MonkeyFault.Freeze.get -> ChaosDotNet.MonkeyFault!
 static ChaosDotNet.MonkeyFault.Jitter.get -> ChaosDotNet.MonkeyFault!
 static ChaosDotNet.MonkeyFault.Latency.get -> ChaosDotNet.MonkeyFault!
 static ChaosDotNet.MonkeyFault.RandomException(string! name, ChaosDotNet.MonkeyFaultKind kind, params System.Func<System.Exception!>![]! exceptions) -> ChaosDotNet.MonkeyFault!
+static ChaosDotNet.OddValueFaults.ReturnOddValues<T>(this ChaosDotNet.WindowBuilder<ChaosDotNet.ChaosSubject<T!>!, ChaosDotNet.SubjectCall!>! window) -> ChaosDotNet.ChaosSubject<T!>!
+static ChaosDotNet.OddValueFaults.ReturnOddValues<T>(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ProxyFactory<T!>!, ChaosDotNet.Proxies.ProxyChaosCall!>! window) -> ChaosDotNet.Factories.ProxyFactory<T!>!
+static ChaosDotNet.OddValues.For(System.Type! type, System.Random! random) -> object?
 static ChaosDotNet.Proxies.ChaosProxy.Create<T>(T! target, ChaosDotNet.ChaosEngine! engine, ChaosDotNet.Proxies.ChaosProxyOptions? options = null) -> T!
 static ChaosDotNet.Proxies.ProxyChaosCall.OperationName(System.Reflection.MethodInfo! method) -> string!
+static ChaosDotNet.Times.AtLeast(int count) -> ChaosDotNet.Times
+static ChaosDotNet.Times.AtMost(int count) -> ChaosDotNet.Times
+static ChaosDotNet.Times.Exactly(int count) -> ChaosDotNet.Times
+static ChaosDotNet.Times.Never.get -> ChaosDotNet.Times
+static ChaosDotNet.Times.Once.get -> ChaosDotNet.Times
+static ChaosDotNet.Times.operator !=(ChaosDotNet.Times left, ChaosDotNet.Times right) -> bool
+static ChaosDotNet.Times.operator ==(ChaosDotNet.Times left, ChaosDotNet.Times right) -> bool
 virtual ChaosDotNet.ChaosFactory<TSelf, TCall>.DefaultMonkeyFaults() -> System.Collections.Generic.IEnumerable<ChaosDotNet.MonkeyFault!>!
 virtual ChaosDotNet.Fault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
+~override ChaosDotNet.Times.Equals(object obj) -> bool

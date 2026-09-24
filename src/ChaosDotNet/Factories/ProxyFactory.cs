@@ -25,7 +25,7 @@ public sealed class ProxyFactory<T> : ChaosFactory<ProxyFactory<T>, ProxyChaosCa
     /// <summary>Creates a veneer over <paramref name="inner"/> and starts the timeline if it has not started.</summary>
     public T Create(T inner)
     {
-        var veneer = ChaosProxy.Create(inner, Engine);
+        var veneer = ChaosProxy.Create(inner, Engine, new ChaosProxyOptions { ApplyFault = OddValueFault.Apply });
         Engine.Start();
         return veneer;
     }
@@ -41,5 +41,6 @@ public sealed class ProxyFactory<T> : ChaosFactory<ProxyFactory<T>, ProxyChaosCa
             () => new IOException("Unable to read data from the transport connection. (ChaosDotNet)"),
             () => new InvalidOperationException("The dependency returned an unexpected response. (ChaosDotNet)"),
             () => new ObjectDisposedException("connection", "The connection was disposed. (ChaosDotNet)")),
+        OddValueFault.Monkey,
     ];
 }

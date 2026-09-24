@@ -1,6 +1,6 @@
 # ChaosDotNet
 
-The core package: timelines, faults, verify, the chaos monkey, and two factories that need nothing else: `HttpFactory` and `ProxyFactory<T>`.
+The core package: timelines, faults, verify, the chaos monkey, `ChaosSubject<T>` for chaotic mocks, and two factories that need nothing else: `HttpFactory` and `ProxyFactory<T>`.
 
 ```shell
 dotnet add package ChaosDotNet
@@ -80,6 +80,45 @@ Wraps any interface, for example your own `IPaymentGateway`:
 var gateway = new ProxyFactory<IPaymentGateway>().ForCalls(2).Fail<TimeoutException>();
 IPaymentGateway veneer = gateway.Create(realGateway);
 ```
+
+## ChaosSubject&lt;T&gt;
+
+A chaotic mock of any interface. Set up what methods return, add chaos, and create it. No real implementation or mocking library needed.
+
+```csharp
+var gateway = new ChaosSubject<IPaymentGateway>()
+    .Setup(g => g.ChargeAsync(Arg.Any<string>(), Arg.Is<decimal>(a => a > 0)))
+        .Returns((string sku, decimal amount) => new Receipt(sku, amount))
+    .Setup(g => g.RefundAsync(Arg.Any<string>())).Throws<NotSupportedException>()
+    .When(g => g.ChargeAsync(Arg.Any<string>(), Arg.Any<decimal>()))
+        .For(10, TimeUnit.Seconds).Freeze()
+    .Then().ForCalls(3).ReturnOddValues();
+
+IPaymentGateway payments = gateway.Create();
+// ... run the code under test ...
+gateway.Received(g => g.ChargeAsync("A-1", 10m), Times.AtLeast(1));
+```
+
+| API | Meaning |
+| --- | --- |
+| `Setup(t => t.Method(args))` | A setup for matching calls: methods and property getters. The last matching setup wins. |
+| `.Returns(value)` / `.Returns((a, b) => ...)` | The result. On async methods the value is wrapped in a completed task. `ReturnsAsync` is an alias. |
+| `.ReturnsInOrder(a, b, c)` | One value per call, then the last value again |
+| `.Throws<T>()` / `.Throws(() => ex)` | Always throw. Async methods return a faulted task. |
+| `.Callback((a, b) => ...)` | Run code on each call, before the result |
+| `Arg.Any<T>()`, `Arg.Is<T>(predicate)`, literals | Argument matchers |
+| `When(t => t.Method(args))` | The next chaos window only hits matching calls |
+| `Received(expression, Times.Once)`, `DidNotReceive(expression)`, `Calls` | Check calls, including ones chaos failed |
+| `new ChaosSubject<T>(strict: true)` | Calls with no setup throw, instead of returning defaults (empty strings and collections, completed tasks, `default`) |
+| `Create(inner)` | A partial mock: calls with no setup go to a real object |
+
+Chaos runs before behaviour: a fault that throws or freezes applies first, then the setup decides the result.
+
+Already use Moq or NSubstitute? Keep them, and pass `mock.Object` to `ProxyFactory<T>` to add chaos.
+
+## Odd return values
+
+`ReturnOddValues()` makes methods return something valid but unexpected: `null`, `""`, a 10,000-character string, `NaN`, `MinValue` and `MaxValue`, undefined enum values, `Guid.Empty`, empty collections. It works on `ChaosSubject<T>` and `ProxyFactory<T>`, and is in both monkey catalogues, so the monkey tests null handling and validation, not just retries. `OddValues.For(type, random)` gives the same values for your own use.
 
 ## Verify
 

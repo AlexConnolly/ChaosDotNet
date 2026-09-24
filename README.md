@@ -48,6 +48,7 @@ Unlike Polly's chaos strategies (random, per call, inside a resilience pipeline)
 | **Fault** | What happens in a window: `Freeze()`, `Latency(...)`, `Fail(...)`, plus each factory's own, such as `RespondMalformedJson()` or `BreakReaderMidway()`. |
 | **Verify** | `factory.Verify().FaultsInjected(...).RecoveredWithin(...)` checks what happened. |
 | **Monkey** | Connects every factory and builds a random plan from a seed. `ExploreAsync` tries many seeds and shrinks failures. |
+| **Subject** | `ChaosSubject<T>`: a chaotic mock of any interface. `Setup(...).Returns(...)` plus the same chaos. |
 
 Tests stay fast and repeatable: pass a `FakeTimeProvider` and a seed, and a 10-minute scenario runs in milliseconds.
 
@@ -55,7 +56,7 @@ Tests stay fast and repeatable: pass a `FakeTimeProvider` and a seed, and a 10-m
 
 | Package | For | Read more |
 | --- | --- | --- |
-| [`ChaosDotNet`](https://www.nuget.org/packages/ChaosDotNet) | The core: timelines, faults, verify, monkey, `HttpFactory`, `ProxyFactory<T>` for any interface | [README](src/ChaosDotNet/README.md) |
+| [`ChaosDotNet`](https://www.nuget.org/packages/ChaosDotNet) | The core: timelines, faults, verify, monkey, `ChaosSubject<T>` mocks, `HttpFactory`, `ProxyFactory<T>` for any interface | [README](src/ChaosDotNet/README.md) |
 | [`ChaosDotNet.Sql`](https://www.nuget.org/packages/ChaosDotNet.Sql) | `DbConnection` and `DbDataSource` (ADO.NET, Dapper) | [README](src/ChaosDotNet.Sql/README.md) |
 | [`ChaosDotNet.EntityFrameworkCore`](https://www.nuget.org/packages/ChaosDotNet.EntityFrameworkCore) | EF Core interceptor | [README](src/ChaosDotNet.EntityFrameworkCore/README.md) |
 | [`ChaosDotNet.SqlServer`](https://www.nuget.org/packages/ChaosDotNet.SqlServer) | Real `SqlException` faults | [README](src/ChaosDotNet.SqlServer/README.md) |
