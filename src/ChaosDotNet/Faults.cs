@@ -16,6 +16,14 @@ public abstract class Fault
     /// </summary>
     public virtual bool AppliesTo(ChaosCall call) => true;
 
+    /// <summary>
+    /// Called by the engine each time the fault's window becomes active, including each repeat of an <c>Every(...)</c> window.
+    /// Faults that keep state per activation, such as a clock drift anchor, reset it here.
+    /// </summary>
+    public virtual void Activated()
+    {
+    }
+
     /// <inheritdoc />
     public override string ToString() => Name;
 }

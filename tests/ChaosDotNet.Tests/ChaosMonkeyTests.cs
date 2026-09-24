@@ -242,6 +242,42 @@ public sealed class ChaosMonkeyTests
     }
 
     [Fact]
+    public async Task RunAsync_handles_synchronous_calls_that_freeze()
+    {
+        var monkey = new ChaosMonkey(new FakeTimeProvider(), 1);
+        var inventory = new ProxyFactory<IInventory>(monkey).Named("inventory").WithMonkeyFaults(MonkeyFault.Freeze, MonkeyFault.Latency).Create(new Inventory());
+
+        var calls = await monkey.RunAsync(async () =>
+        {
+            var count = 0;
+            for (var i = 0; i < 20; i++)
+            {
+                inventory.Count("a");
+                count++;
+                await Task.Delay(TimeSpan.FromSeconds(3), monkey.Clock);
+            }
+
+            return count;
+        }).WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
+
+        Assert.Equal(20, calls);
+    }
+
+    [Fact]
+    public async Task RunAsync_fails_with_an_exception_thrown_in_a_timer_callback()
+    {
+        var monkey = new ChaosMonkey(new FakeTimeProvider(), 1);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => monkey.RunAsync(async () =>
+        {
+            using var timer = monkey.Clock.CreateTimer(_ => throw new InvalidOperationException("timer blew up"), null, TimeSpan.FromSeconds(1), Timeout.InfiniteTimeSpan);
+            await Task.Delay(TimeSpan.FromSeconds(5), monkey.Clock);
+        }).WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken));
+
+        Assert.Equal("timer blew up", error.Message);
+    }
+
+    [Fact]
     public async Task RunAsync_times_out_on_the_system_clock_too()
     {
         var monkey = new ChaosMonkey(TimeProvider.System, 1, new ChaosMonkeyOptions { RunTimeout = TimeSpan.FromMilliseconds(200) });

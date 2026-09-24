@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Time.Testing;
 
 namespace ChaosDotNet;
@@ -10,6 +11,7 @@ internal sealed class ChaosClock : TimeProvider
 {
     private readonly object _gate = new();
     private readonly HashSet<TrackedTimer> _timers = [];
+    private readonly ConcurrentQueue<Exception> _errors = new();
     private int _created;
 
     public ChaosClock(FakeTimeProvider inner)
@@ -45,11 +47,26 @@ internal sealed class ChaosClock : TimeProvider
         var tracked = new TrackedTimer(this);
         lock (_gate)
         {
+            // Callbacks run on the thread pool, never inline inside Advance: a workload continuation that blocks
+            // (for example a synchronous call that freezes) must not block the thread that moves time forward.
             tracked.Inner = Inner.CreateTimer(
                 s =>
                 {
                     tracked.Fired();
-                    callback(s);
+                    ThreadPool.UnsafeQueueUserWorkItem(
+                        static state =>
+                        {
+                            try
+                            {
+                                state.callback(state.s);
+                            }
+                            catch (Exception ex)
+                            {
+                                state.errors.Enqueue(ex);
+                            }
+                        },
+                        (callback, s, errors: _errors),
+                        preferLocal: false);
                 },
                 state,
                 dueTime,
@@ -79,6 +96,9 @@ internal sealed class ChaosClock : TimeProvider
     }
 
     /// <summary>Moves time forward. Holds the same lock as timer creation, so a timer's recorded due time always matches the real one.</summary>
+    /// <summary>Takes an exception thrown by a timer callback, so the monkey's run fails with it instead of the process crashing.</summary>
+    public bool TryTakeError(out Exception error) => _errors.TryDequeue(out error!);
+
     public void Advance(TimeSpan by)
     {
         lock (_gate)

@@ -188,8 +188,29 @@ ChaosDotNet.ChaosVerifier.CallsSucceeded(int? atLeast = null, int? atMost = null
 ChaosDotNet.ChaosVerifier.FaultsInjected(int? atLeast = null, int? atMost = null, int? exactly = null, int? window = null) -> ChaosDotNet.ChaosVerifier!
 ChaosDotNet.ChaosVerifier.NoCallsFrozen() -> ChaosDotNet.ChaosVerifier!
 ChaosDotNet.ChaosVerifier.RecoveredWithin(double amount, ChaosDotNet.TimeUnit unit) -> ChaosDotNet.ChaosVerifier!
+ChaosDotNet.DependencyInjection.ChaosServiceCollectionExtensions
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Add(System.Action! step) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Clock(System.Action<ChaosDotNet.Factories.ClockFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Decorate<TService>(System.Func<System.IServiceProvider!, TService!, TService!>! wrap) -> void
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Except(params string![]! names) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Http(System.Action<string!, ChaosDotNet.Factories.HttpFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Interface<T>(System.Action<ChaosDotNet.Factories.ProxyFactory<T!>!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.IsExcluded(string! name) -> bool
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Scenario.get -> ChaosDotNet.ChaosScenario!
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Track(string! name) -> void
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Wrapped.get -> System.Collections.Generic.IReadOnlyList<string!>!
 ChaosDotNet.Factories.BreakBodyFault
 ChaosDotNet.Factories.BreakBodyFault.BreakBodyFault() -> void
+ChaosDotNet.Factories.ClockCall
+ChaosDotNet.Factories.ClockCall.ClockCall(string! operation) -> void
+ChaosDotNet.Factories.ClockFactory
+ChaosDotNet.Factories.ClockFactory.ClockFactory(ChaosDotNet.ChaosScenario! scenario) -> void
+ChaosDotNet.Factories.ClockFactory.ClockFactory(System.TimeProvider? clock = null, int? seed = null) -> void
+ChaosDotNet.Factories.ClockFactory.Create() -> System.TimeProvider!
+ChaosDotNet.Factories.ClockFault
+ChaosDotNet.Factories.ClockFaults
 ChaosDotNet.Factories.HttpChaosCall
 ChaosDotNet.Factories.HttpChaosCall.HttpChaosCall(System.Net.Http.HttpRequestMessage! request) -> void
 ChaosDotNet.Factories.HttpChaosCall.Request.get -> System.Net.Http.HttpRequestMessage!
@@ -318,6 +339,9 @@ override ChaosDotNet.ChaosIncidentFault.GetHashCode() -> int
 override ChaosDotNet.ChaosIncidentFault.ToString() -> string!
 override ChaosDotNet.ChaosPlan.ToString() -> string!
 override ChaosDotNet.Factories.BreakBodyFault.Name.get -> string!
+override ChaosDotNet.Factories.ClockFault.Activated() -> void
+override ChaosDotNet.Factories.ClockFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
+override ChaosDotNet.Factories.ClockFault.Name.get -> string!
 override ChaosDotNet.Factories.HttpResponseFault.Name.get -> string!
 override ChaosDotNet.FailFault.Name.get -> string!
 override ChaosDotNet.Fault.ToString() -> string!
@@ -355,6 +379,16 @@ static ChaosDotNet.ChaosIncident.operator ==(ChaosDotNet.ChaosIncident? left, Ch
 static ChaosDotNet.ChaosIncidentFault.operator !=(ChaosDotNet.ChaosIncidentFault? left, ChaosDotNet.ChaosIncidentFault? right) -> bool
 static ChaosDotNet.ChaosIncidentFault.operator ==(ChaosDotNet.ChaosIncidentFault? left, ChaosDotNet.ChaosIncidentFault? right) -> bool
 static ChaosDotNet.ChaosMonkey.ExploreAsync(int runs, System.Func<ChaosDotNet.ChaosMonkey!, System.Threading.Tasks.Task!>! scenario, ChaosDotNet.ChaosExploreOptions? options = null) -> System.Threading.Tasks.Task!
+static ChaosDotNet.ChaosMonkey.Replay(int seed, System.Collections.Generic.IEnumerable<int>! incidents, System.TimeProvider? clock = null, ChaosDotNet.ChaosMonkeyOptions? options = null) -> ChaosDotNet.ChaosMonkey!
+static ChaosDotNet.DependencyInjection.ChaosServiceCollectionExtensions.AddChaos(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, ChaosDotNet.ChaosScenario! scenario, System.Action<ChaosDotNet.DependencyInjection.ChaosServicesBuilder!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static ChaosDotNet.DependencyInjection.ChaosServiceCollectionExtensions.AddChaosMonkey(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, ChaosDotNet.ChaosMonkey! monkey, System.Action<ChaosDotNet.DependencyInjection.ChaosServicesBuilder!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static ChaosDotNet.Factories.ClockFaults.DaylightSaving(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ClockFactory!, ChaosDotNet.Factories.ClockCall!>! window, int hours = 1) -> ChaosDotNet.Factories.ClockFactory!
+static ChaosDotNet.Factories.ClockFaults.Drift(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ClockFactory!, ChaosDotNet.Factories.ClockCall!>! window, double factor) -> ChaosDotNet.Factories.ClockFactory!
+static ChaosDotNet.Factories.ClockFaults.JumpBackward(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ClockFactory!, ChaosDotNet.Factories.ClockCall!>! window, double amount, ChaosDotNet.TimeUnit unit) -> ChaosDotNet.Factories.ClockFactory!
+static ChaosDotNet.Factories.ClockFaults.JumpForward(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ClockFactory!, ChaosDotNet.Factories.ClockCall!>! window, double amount, ChaosDotNet.TimeUnit unit) -> ChaosDotNet.Factories.ClockFactory!
+static ChaosDotNet.Factories.ClockFaults.LateTimers(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ClockFactory!, ChaosDotNet.Factories.ClockCall!>! window, double amount, ChaosDotNet.TimeUnit unit) -> ChaosDotNet.Factories.ClockFactory!
+static ChaosDotNet.Factories.ClockFaults.NonMonotonic(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ClockFactory!, ChaosDotNet.Factories.ClockCall!>! window) -> ChaosDotNet.Factories.ClockFactory!
+static ChaosDotNet.Factories.ClockFaults.Stall(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.ClockFactory!, ChaosDotNet.Factories.ClockCall!>! window) -> ChaosDotNet.Factories.ClockFactory!
 static ChaosDotNet.Factories.HttpFaults.BreakBodyMidway(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.HttpFactory!, ChaosDotNet.Factories.HttpChaosCall!>! window) -> ChaosDotNet.Factories.HttpFactory!
 static ChaosDotNet.Factories.HttpFaults.ConnectionClosed(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.HttpFactory!, ChaosDotNet.Factories.HttpChaosCall!>! window) -> ChaosDotNet.Factories.HttpFactory!
 static ChaosDotNet.Factories.HttpFaults.ConnectionRefused(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.HttpFactory!, ChaosDotNet.Factories.HttpChaosCall!>! window) -> ChaosDotNet.Factories.HttpFactory!
@@ -385,5 +419,6 @@ static ChaosDotNet.Times.Once.get -> ChaosDotNet.Times
 static ChaosDotNet.Times.operator !=(ChaosDotNet.Times left, ChaosDotNet.Times right) -> bool
 static ChaosDotNet.Times.operator ==(ChaosDotNet.Times left, ChaosDotNet.Times right) -> bool
 virtual ChaosDotNet.ChaosFactory<TSelf, TCall>.DefaultMonkeyFaults() -> System.Collections.Generic.IEnumerable<ChaosDotNet.MonkeyFault!>!
+virtual ChaosDotNet.Fault.Activated() -> void
 virtual ChaosDotNet.Fault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
 ~override ChaosDotNet.Times.Equals(object obj) -> bool

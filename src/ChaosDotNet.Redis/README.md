@@ -28,6 +28,10 @@ Commands on `GetDatabase()` and `GetSubscriber()` follow the timeline. Batches a
 
 Plus `Freeze()`, `Latency(...)`, `Jitter(...)`, `Fail(...)` and `FailRandomly(...)` from the core.
 
+## Dependency injection
+
+`services.AddChaosMonkey(monkey, chaos => chaos.Redis())` wraps the registered `IConnectionMultiplexer`, named `redis`.
+
 ## Chaos monkey
 
 The catalogue is connection failures, timeouts, server errors, corrupt values, freeze, latency and jitter. `Miss` is only used with `AllowDataLoss`.

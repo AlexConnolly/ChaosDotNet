@@ -72,6 +72,29 @@ services.AddHttpClient("payments").AddHttpMessageHandler(() => payments.CreateHa
 | `RespondGarbage()` | `200 OK` with random bytes |
 | `BreakBodyMidway()` | Reaches the server, then the body stops halfway with an `IOException` |
 
+## ClockFactory
+
+A chaotic `TimeProvider` for the app itself, to catch bugs caused by time: expired tokens, broken schedules, negative durations.
+
+```csharp
+var clock = new ClockFactory()
+    .After(10, TimeUnit.Seconds).For(30, TimeUnit.Seconds).JumpBackward(5, TimeUnit.Minutes)
+    .Then().For(1, TimeUnit.Minutes).Drift(1.2);
+
+services.AddSingleton<TimeProvider>(clock.Create());
+```
+
+| Fault | Effect while the window is active |
+| --- | --- |
+| `JumpForward(amount, unit)` / `JumpBackward(amount, unit)` | `GetUtcNow()` is ahead or behind |
+| `Drift(factor)` | Time runs fast (`1.2`) or slow (`0.8`); timestamps drift too |
+| `Stall()` | Time stands still |
+| `DaylightSaving(hours)` | The local offset shifts; UTC is unchanged |
+| `LateTimers(amount, unit)` | Timers and delays fire late |
+| `NonMonotonic()` | `GetTimestamp()` can go backwards |
+
+When a window ends the clock snaps back to real time, like an NTP correction. `GetTimestamp()` stays monotonic unless `NonMonotonic()` is on. Only code that uses the `TimeProvider` is affected; `DateTime.UtcNow` and `Stopwatch` cannot be intercepted.
+
 ## ProxyFactory&lt;T&gt;
 
 Wraps any interface, for example your own `IPaymentGateway`:
@@ -145,6 +168,27 @@ await request;
 ```
 
 To start several factories together on one clock, pass a `ChaosScenario` to each and call `scenario.Start()`.
+
+## AddChaosMonkey
+
+One line in the test's service setup wraps every supported client the app registered:
+
+```csharp
+using var app = new WebApplicationFactory<Program>().WithWebHostBuilder(host => host.ConfigureTestServices(services =>
+    services.AddChaosMonkey(monkey, chaos => chaos
+        .Http()                        // every IHttpClientFactory client, innermost so resilience handlers see the faults
+        .EntityFrameworkCore()         // every DbContext (ChaosDotNet.EntityFrameworkCore)
+        .Redis()                       // IConnectionMultiplexer (ChaosDotNet.Redis)
+        .DistributedCache()            // IDistributedCache (ChaosDotNet.Caching)
+        .ServiceBus()                  // ServiceBusClient (ChaosDotNet.AzureServiceBus)
+        .Clock()                       // the app's TimeProvider
+        .Interface<IPaymentGateway>()  // any interface
+        .Except("http:health"))));
+```
+
+Dependencies are named `http:{client}`, `sql:{context}`, `redis`, `cache`, `servicebus`, `clock` and the interface name. Lifetimes are kept. Call it after the app's own registrations; it throws if there is nothing to wrap. Named HTTP clients are found once they have any configuration (a base address or a handler); typed clients are always found.
+
+`AddChaos(scenario, ...)` does the same with hand-written timelines, for example `chaos.Http((name, f) => f.ForCalls(3).Respond(HttpStatusCode.ServiceUnavailable))`.
 
 ## Add the monkey to what you already have
 

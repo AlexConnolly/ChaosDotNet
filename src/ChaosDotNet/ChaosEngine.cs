@@ -332,6 +332,7 @@ public sealed class ChaosEngine
 
             var segment = _segments[_index];
             DateTimeOffset? activeUntil;
+            DateTimeOffset activation;
             switch (segment.Kind)
             {
                 case SegmentKind.Gap:
@@ -344,9 +345,11 @@ public sealed class ChaosEngine
                     }
 
                     activeUntil = now + (segment.Duration - offset);
+                    activation = now - offset;
                     break;
                 default:
                     activeUntil = segment.End == WindowEnd.Duration ? _segmentStart + segment.Duration : null;
+                    activation = _segmentStart;
                     break;
             }
 
@@ -356,6 +359,11 @@ public sealed class ChaosEngine
             }
 
             _segmentCalls++;
+            if (segment.LastActivation != activation)
+            {
+                segment.LastActivation = activation;
+                segment.Fault!.Activated();
+            }
 
             if (segment.Rate < 1.0 && (segment.Random ?? _random).NextDouble() >= segment.Rate)
             {

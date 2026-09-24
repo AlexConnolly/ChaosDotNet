@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using ChaosDotNet;
-using ChaosDotNet.Factories;
+using ChaosDotNet.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
@@ -19,9 +19,7 @@ public sealed class OrderServiceMonkeyTests
             runs: 5,
             async monkey =>
             {
-                var orders = new SqlFactory(monkey).Named("orders").UseSqlServerFaults();
-                var payments = new HttpFactory(monkey).Named("payments");
-                await using var shop = new Shop(orders, payments);
+                await using var shop = new Shop(monkey);
                 using var client = shop.App.CreateClient();
                 var statuses = new List<HttpStatusCode>();
 
@@ -50,7 +48,7 @@ public sealed class OrderServiceMonkeyTests
     {
         private readonly SqliteConnection _database = new("Data Source=:memory:");
 
-        public Shop(SqlFactory orders, HttpFactory payments)
+        public Shop(ChaosMonkey monkey)
         {
             _database.Open();
             using (var db = new OrdersDb(new DbContextOptionsBuilder<OrdersDb>().UseSqlite(_database).Options))
@@ -60,10 +58,11 @@ public sealed class OrderServiceMonkeyTests
 
             App = new WebApplicationFactory<Program>().WithWebHostBuilder(host => host.ConfigureTestServices(services =>
             {
-                services.AddDbContext<OrdersDb>(options => options.UseSqlite(_database).AddInterceptors(orders.CreateInterceptor()));
-                services.AddHttpClient<PaymentsClient>()
-                    .AddHttpMessageHandler(() => payments.CreateHandler())
-                    .ConfigurePrimaryHttpMessageHandler(() => Payments);
+                services.AddDbContext<OrdersDb>(options => options.UseSqlite(_database));
+                services.AddHttpClient<PaymentsClient>().ConfigurePrimaryHttpMessageHandler(() => Payments);
+
+                // One line puts the whole app under the monkey.
+                services.AddChaosMonkey(monkey, chaos => chaos.Http().EntityFrameworkCore((_, orders) => orders.UseSqlServerFaults()));
             }));
         }
 

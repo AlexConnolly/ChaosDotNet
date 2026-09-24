@@ -37,6 +37,8 @@ internal sealed class Segment
 
     public Random? Random { get; init; }
 
+    public DateTimeOffset? LastActivation { get; set; }
+
     public int WindowIndex { get; set; } = -1;
 
     public bool IsBounded => Kind == SegmentKind.Repeating || End == WindowEnd.Duration;

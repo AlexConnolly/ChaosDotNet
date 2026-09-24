@@ -34,7 +34,13 @@ Reproduce: set CHAOS_SEED=3 CHAOS_INCIDENTS=3
 
 ## Add chaos to what you already have
 
-Every factory wraps an instance you already have. The instance keeps working as before; the chaos runs around each call.
+In an ASP.NET Core test, one line wraps every supported client the app registers:
+
+```csharp
+services.AddChaosMonkey(monkey, chaos => chaos.Http().EntityFrameworkCore().Redis().Clock().Interface<IPaymentGateway>());
+```
+
+Or wrap instances yourself. Every factory wraps an instance you already have. The instance keeps working as before; the chaos runs around each call.
 
 ```csharp
 var monkey = new ChaosMonkey();
@@ -65,6 +71,7 @@ Unlike Polly's chaos strategies (random, per call, inside a resilience pipeline)
 | **Verify** | `factory.Verify().FaultsInjected(...).RecoveredWithin(...)` checks what happened. |
 | **Monkey** | Connects every factory and builds a random plan from a seed. `ExploreAsync` tries many seeds and shrinks failures. |
 | **Subject** | `ChaosSubject<T>`: a chaotic mock of any interface. `Setup(...).Returns(...)` plus the same chaos. |
+| **Clock** | `ClockFactory`: a chaotic `TimeProvider` for the app. Time jumps, goes backwards, drifts or stands still. |
 
 Tests stay fast and repeatable: pass a `FakeTimeProvider` and a seed, and a 10-minute scenario runs in milliseconds.
 

@@ -31,6 +31,10 @@ Senders, receivers and processors created from the veneer follow the timeline. S
 
 Plus `Freeze()`, `Latency(...)`, `Jitter(...)`, `Fail(...)` and `FailRandomly(...)` from the core. A `Fail` on `Process` makes the handler throw, so Service Bus abandons and redelivers the message.
 
+## Dependency injection
+
+`services.AddChaosMonkey(monkey, chaos => chaos.ServiceBus())` wraps the registered `ServiceBusClient`, named `servicebus`.
+
 ## Chaos monkey
 
 The catalogue is communication problems, busy, timeouts, lost locks, full queues, oversized messages, duplicates, freeze, latency and jitter. `Drop` is only used with `AllowDataLoss`.

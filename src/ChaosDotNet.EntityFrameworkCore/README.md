@@ -24,4 +24,6 @@ Connection opens, queries, `SaveChanges` commands and commits follow the timelin
 
 Every `SqlFactory` fault works, including `BreakReaderMidway()`, which makes a query fail partway through reading its rows. See [`ChaosDotNet.Sql`](https://www.nuget.org/packages/ChaosDotNet.Sql) for filters and faults.
 
+With `AddChaosMonkey`, `chaos.EntityFrameworkCore()` adds an interceptor to every registered `DbContext`, named `sql:{context}`. Pass a callback to configure each factory, for example `chaos.EntityFrameworkCore((_, f) => f.UseSqlServerFaults())`.
+
 Tip: create the schema before the timeline starts, or filter it out with `When(...)`, so `EnsureCreated` is not affected.

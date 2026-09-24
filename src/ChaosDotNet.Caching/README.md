@@ -23,6 +23,10 @@ services.AddSingleton<IDistributedCache>(_ => cache.Create(realCache));
 
 Plus `Freeze()`, `Latency(...)`, `Jitter(...)`, `Fail(...)` and `FailRandomly(...)` from the core.
 
+## Dependency injection
+
+`services.AddChaosMonkey(monkey, chaos => chaos.DistributedCache())` wraps the registered `IDistributedCache`, named `cache`.
+
 ## Chaos monkey
 
 The catalogue is timeouts, corrupt reads, freeze, latency and jitter. `Miss` is only used with `AllowDataLoss`.

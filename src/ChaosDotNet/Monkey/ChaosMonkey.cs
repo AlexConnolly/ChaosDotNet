@@ -47,6 +47,16 @@ public sealed class ChaosMonkey : ChaosScenario
     /// <summary>The settings.</summary>
     public ChaosMonkeyOptions Options { get; }
 
+    /// <summary>
+    /// Creates a monkey that replays the plan for <paramref name="seed"/> with only the given incident numbers. Used to shrink
+    /// a failing plan, and to replay a shrunk plan from a failure message.
+    /// </summary>
+    public static ChaosMonkey Replay(int seed, IEnumerable<int> incidents, TimeProvider? clock = null, ChaosMonkeyOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(incidents);
+        return new ChaosMonkey(clock, seed, options, incidents.ToHashSet());
+    }
+
     /// <summary>The plan. It is built when the monkey starts, from every factory registered by then.</summary>
     public ChaosPlan Plan => _plan ?? new ChaosPlan(Seed, [], _only);
 
@@ -119,6 +129,7 @@ public sealed class ChaosMonkey : ChaosScenario
         {
             // After a few rounds with no new tracked timer, the workload is not waiting on monkey.Clock: stop waiting for one.
             await SettleAsync(run, clock, created, untrackedRounds > 3 ? 1 : 50).ConfigureAwait(false);
+            ThrowTimerError(clock);
             untrackedRounds = clock.TimersCreated == created ? untrackedRounds + 1 : 0;
             created = clock.TimersCreated;
             if (run.IsCompleted)
@@ -144,6 +155,14 @@ public sealed class ChaosMonkey : ChaosScenario
             {
                 clock.Advance(fallbackStep);
             }
+        }
+    }
+
+    private static void ThrowTimerError(ChaosClock clock)
+    {
+        if (clock.TryTakeError(out var error))
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error).Throw();
         }
     }
 
