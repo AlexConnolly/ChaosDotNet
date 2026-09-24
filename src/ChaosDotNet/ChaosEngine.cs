@@ -301,6 +301,11 @@ public sealed class ChaosEngine
 
         lock (_gate)
         {
+            if (_startedAt is null)
+            {
+                return default;
+            }
+
             var now = Clock.GetUtcNow();
             Advance(now);
 

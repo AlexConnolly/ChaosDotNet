@@ -42,8 +42,6 @@ public sealed class ChaosScenario
     /// <summary>Starts every factory's timeline now. Does nothing if the scenario has already started.</summary>
     public void Start()
     {
-        ChaosEngine[] engines;
-        DateTimeOffset at;
         lock (_gate)
         {
             if (_startedAt is not null)
@@ -51,14 +49,13 @@ public sealed class ChaosScenario
                 return;
             }
 
-            at = Clock.GetUtcNow();
-            _startedAt = at;
-            engines = _engines.ToArray();
-        }
+            var at = Clock.GetUtcNow();
+            foreach (var engine in _engines)
+            {
+                engine.StartAt(at);
+            }
 
-        foreach (var engine in engines)
-        {
-            engine.StartAt(at);
+            _startedAt = at;
         }
     }
 
@@ -72,16 +69,13 @@ public sealed class ChaosScenario
 
     internal void Register(ChaosEngine engine)
     {
-        DateTimeOffset? startedAt;
         lock (_gate)
         {
             _engines.Add(engine);
-            startedAt = _startedAt;
-        }
-
-        if (startedAt is { } at)
-        {
-            engine.StartAt(at);
+            if (_startedAt is { } at)
+            {
+                engine.StartAt(at);
+            }
         }
     }
 }

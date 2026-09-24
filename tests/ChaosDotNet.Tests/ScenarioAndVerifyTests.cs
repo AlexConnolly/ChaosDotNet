@@ -21,6 +21,37 @@ public sealed class ScenarioAndVerifyTests
     }
 
     [Fact]
+    public void Racing_first_calls_in_a_scenario_keep_every_window()
+    {
+        var method = typeof(IInventory).GetMethod(nameof(IInventory.Count))!;
+        for (var i = 0; i < 300; i++)
+        {
+            var scenario = new ChaosScenario(_clock);
+            var engines = Enumerable.Range(0, 64)
+                .Select(_ => new ProxyFactory<IInventory>(scenario).For(1, TimeUnit.Hours).Fail<ChaosTestException>().Engine)
+                .ToArray();
+            var callers = new[] { engines[0], engines[^1], engines[^2], engines[^3] };
+            using var barrier = new Barrier(callers.Length);
+
+            var threads = callers.Select(engine => new Thread(() =>
+            {
+                barrier.SignalAndWait();
+                try
+                {
+                    engine.BeforeCall(new Proxies.ProxyChaosCall(method, ["a"]));
+                }
+                catch (ChaosTestException)
+                {
+                }
+            })).ToArray();
+            Array.ForEach(threads, t => t.Start());
+            Array.ForEach(threads, t => t.Join());
+
+            Assert.All(callers, engine => Assert.Contains(engine.Log, e => e.Kind == ChaosEventKind.FaultInjected));
+        }
+    }
+
+    [Fact]
     public void Scenario_start_starts_every_factory()
     {
         var scenario = new ChaosScenario(_clock);
