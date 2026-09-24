@@ -1,0 +1,3 @@
+#nullable enable
+ChaosDotNet.Factories.SqlFactoryEntityFrameworkCoreExtensions
+static ChaosDotNet.Factories.SqlFactoryEntityFrameworkCoreExtensions.CreateInterceptor(this ChaosDotNet.Factories.SqlFactory! factory) -> Microsoft.EntityFrameworkCore.Diagnostics.IInterceptor!

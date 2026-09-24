@@ -1,0 +1,16 @@
+#nullable enable
+ChaosDotNet.Factories.ChaosDbException
+ChaosDotNet.Factories.ChaosDbException.ChaosDbException(string! message, System.Exception? innerException = null) -> void
+ChaosDotNet.Factories.DbFaults
+ChaosDotNet.Factories.SqlChaosCall
+ChaosDotNet.Factories.SqlChaosCall.CommandText.get -> string?
+ChaosDotNet.Factories.SqlChaosCall.IsCommand.get -> bool
+ChaosDotNet.Factories.SqlChaosCall.SqlChaosCall(string! operation, string? commandText = null) -> void
+ChaosDotNet.Factories.SqlFactory
+ChaosDotNet.Factories.SqlFactory.CreateConnection(System.Data.Common.DbConnection! inner) -> System.Data.Common.DbConnection!
+ChaosDotNet.Factories.SqlFactory.CreateDataSource(System.Data.Common.DbDataSource! inner) -> System.Data.Common.DbDataSource!
+ChaosDotNet.Factories.SqlFactory.SqlFactory(ChaosDotNet.ChaosScenario! scenario) -> void
+ChaosDotNet.Factories.SqlFactory.SqlFactory(System.TimeProvider? clock = null, int? seed = null) -> void
+override ChaosDotNet.Factories.ChaosDbException.IsTransient.get -> bool
+static ChaosDotNet.Factories.DbFaults.CommandTimeout(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.SqlFactory!, ChaosDotNet.Factories.SqlChaosCall!>! window) -> ChaosDotNet.Factories.SqlFactory!
+static ChaosDotNet.Factories.DbFaults.ConnectionFailure(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.SqlFactory!, ChaosDotNet.Factories.SqlChaosCall!>! window) -> ChaosDotNet.Factories.SqlFactory!

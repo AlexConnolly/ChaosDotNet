@@ -1,0 +1,11 @@
+#nullable enable
+ChaosDotNet.NpgsqlFaults
+static ChaosDotNet.NpgsqlFaults.AdminShutdown.get -> System.Func<System.Exception!>!
+static ChaosDotNet.NpgsqlFaults.ConnectionLost.get -> System.Func<System.Exception!>!
+static ChaosDotNet.NpgsqlFaults.Create(string! sqlState, string! message, string! severity = "ERROR") -> Npgsql.PostgresException!
+static ChaosDotNet.NpgsqlFaults.Deadlock.get -> System.Func<System.Exception!>!
+static ChaosDotNet.NpgsqlFaults.SerializationFailure.get -> System.Func<System.Exception!>!
+static ChaosDotNet.NpgsqlFaults.StatementTimeout.get -> System.Func<System.Exception!>!
+static ChaosDotNet.NpgsqlFaults.Timeout.get -> System.Func<System.Exception!>!
+static ChaosDotNet.NpgsqlFaults.TooManyConnections.get -> System.Func<System.Exception!>!
+static ChaosDotNet.NpgsqlFaults.UniqueViolation.get -> System.Func<System.Exception!>!

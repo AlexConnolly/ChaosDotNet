@@ -1,0 +1,14 @@
+#nullable enable
+ChaosDotNet.Factories.CacheChaosCall
+ChaosDotNet.Factories.CacheChaosCall.CacheChaosCall(string! operation, string! key) -> void
+ChaosDotNet.Factories.CacheChaosCall.Key.get -> string!
+ChaosDotNet.Factories.CacheFactory
+ChaosDotNet.Factories.CacheFactory.CacheFactory(ChaosDotNet.ChaosScenario! scenario) -> void
+ChaosDotNet.Factories.CacheFactory.CacheFactory(System.TimeProvider? clock = null, int? seed = null) -> void
+ChaosDotNet.Factories.CacheFactory.Create(Microsoft.Extensions.Caching.Distributed.IDistributedCache! inner) -> Microsoft.Extensions.Caching.Distributed.IDistributedCache!
+ChaosDotNet.Factories.CacheFaults
+ChaosDotNet.Factories.MissFault
+override ChaosDotNet.Factories.MissFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
+override ChaosDotNet.Factories.MissFault.Name.get -> string!
+static ChaosDotNet.Factories.CacheFaults.Miss(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.CacheFactory!, ChaosDotNet.Factories.CacheChaosCall!>! window) -> ChaosDotNet.Factories.CacheFactory!
+static ChaosDotNet.Factories.CacheFaults.Timeout(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.CacheFactory!, ChaosDotNet.Factories.CacheChaosCall!>! window) -> ChaosDotNet.Factories.CacheFactory!

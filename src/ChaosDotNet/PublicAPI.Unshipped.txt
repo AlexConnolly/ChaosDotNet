@@ -1,0 +1,162 @@
+#nullable enable
+abstract ChaosDotNet.Fault.Name.get -> string!
+ChaosDotNet.ChaosAssertionException
+ChaosDotNet.ChaosAssertionException.ChaosAssertionException(string! message) -> void
+ChaosDotNet.ChaosCall
+ChaosDotNet.ChaosCall.ChaosCall(string! operation) -> void
+ChaosDotNet.ChaosCall.Operation.get -> string!
+ChaosDotNet.ChaosEngine
+ChaosDotNet.ChaosEngine.BeforeCall(ChaosDotNet.ChaosCall! call, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> ChaosDotNet.Fault?
+ChaosDotNet.ChaosEngine.BeforeCallAsync(ChaosDotNet.ChaosCall! call, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<ChaosDotNet.Fault?>
+ChaosDotNet.ChaosEngine.CallFailed(ChaosDotNet.ChaosCall! call, System.Exception! exception) -> void
+ChaosDotNet.ChaosEngine.CallSucceeded(ChaosDotNet.ChaosCall! call) -> void
+ChaosDotNet.ChaosEngine.Clock.get -> System.TimeProvider!
+ChaosDotNet.ChaosEngine.FrozenCalls.get -> int
+ChaosDotNet.ChaosEngine.Log.get -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.ChaosEvent!>!
+ChaosDotNet.ChaosEngine.MaxFreeze.get -> System.TimeSpan
+ChaosDotNet.ChaosEngine.Run(ChaosDotNet.ChaosCall! call, System.Action! realCall) -> void
+ChaosDotNet.ChaosEngine.Run<T>(ChaosDotNet.ChaosCall! call, System.Func<T>! realCall) -> T
+ChaosDotNet.ChaosEngine.RunAsync(ChaosDotNet.ChaosCall! call, System.Func<System.Threading.Tasks.Task!>! realCall, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+ChaosDotNet.ChaosEngine.RunAsync<T>(ChaosDotNet.ChaosCall! call, System.Func<System.Threading.Tasks.Task<T>!>! realCall, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+ChaosDotNet.ChaosEngine.Seed.get -> int
+ChaosDotNet.ChaosEngine.Start() -> void
+ChaosDotNet.ChaosEngine.StartedAt.get -> System.DateTimeOffset?
+ChaosDotNet.ChaosEvent
+ChaosDotNet.ChaosEvent.<Clone>$() -> ChaosDotNet.ChaosEvent!
+ChaosDotNet.ChaosEvent.ChaosEvent(System.DateTimeOffset Timestamp, ChaosDotNet.ChaosEventKind Kind, int? Window = null, string? Operation = null, string? Fault = null, System.Exception? Exception = null) -> void
+ChaosDotNet.ChaosEvent.Deconstruct(out System.DateTimeOffset Timestamp, out ChaosDotNet.ChaosEventKind Kind, out int? Window, out string? Operation, out string? Fault, out System.Exception? Exception) -> void
+ChaosDotNet.ChaosEvent.Equals(ChaosDotNet.ChaosEvent? other) -> bool
+ChaosDotNet.ChaosEvent.Exception.get -> System.Exception?
+ChaosDotNet.ChaosEvent.Exception.init -> void
+ChaosDotNet.ChaosEvent.Fault.get -> string?
+ChaosDotNet.ChaosEvent.Fault.init -> void
+ChaosDotNet.ChaosEvent.Kind.get -> ChaosDotNet.ChaosEventKind
+ChaosDotNet.ChaosEvent.Kind.init -> void
+ChaosDotNet.ChaosEvent.Operation.get -> string?
+ChaosDotNet.ChaosEvent.Operation.init -> void
+ChaosDotNet.ChaosEvent.Timestamp.get -> System.DateTimeOffset
+ChaosDotNet.ChaosEvent.Timestamp.init -> void
+ChaosDotNet.ChaosEvent.Window.get -> int?
+ChaosDotNet.ChaosEvent.Window.init -> void
+ChaosDotNet.ChaosEventKind
+ChaosDotNet.ChaosEventKind.CallFailed = 6 -> ChaosDotNet.ChaosEventKind
+ChaosDotNet.ChaosEventKind.CallSucceeded = 5 -> ChaosDotNet.ChaosEventKind
+ChaosDotNet.ChaosEventKind.FaultInjected = 3 -> ChaosDotNet.ChaosEventKind
+ChaosDotNet.ChaosEventKind.FaultSkipped = 4 -> ChaosDotNet.ChaosEventKind
+ChaosDotNet.ChaosEventKind.TimelineStarted = 0 -> ChaosDotNet.ChaosEventKind
+ChaosDotNet.ChaosEventKind.WindowEnded = 2 -> ChaosDotNet.ChaosEventKind
+ChaosDotNet.ChaosEventKind.WindowStarted = 1 -> ChaosDotNet.ChaosEventKind
+ChaosDotNet.ChaosFactory<TSelf, TCall>
+ChaosDotNet.ChaosFactory<TSelf, TCall>.After(double amount, ChaosDotNet.TimeUnit unit) -> TSelf!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.ChaosFactory(ChaosDotNet.ChaosScenario! scenario) -> void
+ChaosDotNet.ChaosFactory<TSelf, TCall>.ChaosFactory(System.TimeProvider? clock = null, int? seed = null) -> void
+ChaosDotNet.ChaosFactory<TSelf, TCall>.Engine.get -> ChaosDotNet.ChaosEngine!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.Every(double period, ChaosDotNet.TimeUnit unit) -> ChaosDotNet.RepeatBuilder<TSelf!, TCall!>!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.Flaky(double rate) -> TSelf!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.For(double amount, ChaosDotNet.TimeUnit unit) -> ChaosDotNet.WindowBuilder<TSelf!, TCall!>!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.ForCalls(int count) -> ChaosDotNet.WindowBuilder<TSelf!, TCall!>!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.Forever() -> ChaosDotNet.WindowBuilder<TSelf!, TCall!>!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.Log.get -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.ChaosEvent!>!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.Seed.get -> int
+ChaosDotNet.ChaosFactory<TSelf, TCall>.Start() -> TSelf!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.Then() -> TSelf!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.Until(System.Func<bool>! condition) -> ChaosDotNet.WindowBuilder<TSelf!, TCall!>!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.Verify() -> ChaosDotNet.ChaosVerifier!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.When(System.Func<TCall!, bool>! predicate) -> TSelf!
+ChaosDotNet.ChaosFactory<TSelf, TCall>.WithMaxFreeze(double amount, ChaosDotNet.TimeUnit unit) -> TSelf!
+ChaosDotNet.ChaosFreezeTimeoutException
+ChaosDotNet.ChaosFreezeTimeoutException.ChaosFreezeTimeoutException(System.TimeSpan maxFreeze) -> void
+ChaosDotNet.ChaosFreezeTimeoutException.MaxFreeze.get -> System.TimeSpan
+ChaosDotNet.ChaosScenario
+ChaosDotNet.ChaosScenario.ChaosScenario(System.TimeProvider? clock = null, int? seed = null) -> void
+ChaosDotNet.ChaosScenario.Clock.get -> System.TimeProvider!
+ChaosDotNet.ChaosScenario.Seed.get -> int
+ChaosDotNet.ChaosScenario.Start() -> void
+ChaosDotNet.ChaosScenario.StartedAt.get -> System.DateTimeOffset?
+ChaosDotNet.ChaosVerifier
+ChaosDotNet.ChaosVerifier.CallsSucceeded(int? atLeast = null, int? atMost = null, int? exactly = null) -> ChaosDotNet.ChaosVerifier!
+ChaosDotNet.ChaosVerifier.FaultsInjected(int? atLeast = null, int? atMost = null, int? exactly = null, int? window = null) -> ChaosDotNet.ChaosVerifier!
+ChaosDotNet.ChaosVerifier.NoCallsFrozen() -> ChaosDotNet.ChaosVerifier!
+ChaosDotNet.ChaosVerifier.RecoveredWithin(double amount, ChaosDotNet.TimeUnit unit) -> ChaosDotNet.ChaosVerifier!
+ChaosDotNet.Factories.HttpChaosCall
+ChaosDotNet.Factories.HttpChaosCall.HttpChaosCall(System.Net.Http.HttpRequestMessage! request) -> void
+ChaosDotNet.Factories.HttpChaosCall.Request.get -> System.Net.Http.HttpRequestMessage!
+ChaosDotNet.Factories.HttpFactory
+ChaosDotNet.Factories.HttpFactory.CreateClient(System.Uri? baseAddress = null, System.Net.Http.HttpMessageHandler? inner = null) -> System.Net.Http.HttpClient!
+ChaosDotNet.Factories.HttpFactory.CreateHandler() -> System.Net.Http.DelegatingHandler!
+ChaosDotNet.Factories.HttpFactory.HttpFactory(ChaosDotNet.ChaosScenario! scenario) -> void
+ChaosDotNet.Factories.HttpFactory.HttpFactory(System.TimeProvider? clock = null, int? seed = null) -> void
+ChaosDotNet.Factories.HttpFaults
+ChaosDotNet.Factories.HttpResponseFault
+ChaosDotNet.Factories.HttpResponseFault.CreateResponse(System.Net.Http.HttpRequestMessage! request) -> System.Net.Http.HttpResponseMessage!
+ChaosDotNet.Factories.HttpResponseFault.HttpResponseFault(System.Func<System.Net.Http.HttpRequestMessage!, System.Net.Http.HttpResponseMessage!>! response) -> void
+ChaosDotNet.Factories.ProxyFactory<T>
+ChaosDotNet.Factories.ProxyFactory<T>.Create(T! inner) -> T!
+ChaosDotNet.Factories.ProxyFactory<T>.ProxyFactory(ChaosDotNet.ChaosScenario! scenario) -> void
+ChaosDotNet.Factories.ProxyFactory<T>.ProxyFactory(System.TimeProvider? clock = null, int? seed = null) -> void
+ChaosDotNet.FailFault
+ChaosDotNet.FailFault.CreateException(ChaosDotNet.ChaosCall! call) -> System.Exception!
+ChaosDotNet.FailFault.FailFault(System.Func<ChaosDotNet.ChaosCall!, System.Exception!>! exception) -> void
+ChaosDotNet.Fault
+ChaosDotNet.Fault.Fault() -> void
+ChaosDotNet.FreezeFault
+ChaosDotNet.JitterFault
+ChaosDotNet.JitterFault.JitterFault(System.TimeSpan min, System.TimeSpan max) -> void
+ChaosDotNet.JitterFault.Max.get -> System.TimeSpan
+ChaosDotNet.JitterFault.Min.get -> System.TimeSpan
+ChaosDotNet.LatencyFault
+ChaosDotNet.LatencyFault.Delay.get -> System.TimeSpan
+ChaosDotNet.LatencyFault.LatencyFault(System.TimeSpan delay) -> void
+ChaosDotNet.Proxies.ChaosDispatchProxy
+ChaosDotNet.Proxies.ChaosDispatchProxy.ChaosDispatchProxy() -> void
+ChaosDotNet.Proxies.ChaosProxy
+ChaosDotNet.Proxies.ChaosProxyOptions
+ChaosDotNet.Proxies.ChaosProxyOptions.ApplyFault.get -> System.Func<ChaosDotNet.Fault!, System.Reflection.MethodInfo!, object?[]!, object?>?
+ChaosDotNet.Proxies.ChaosProxyOptions.ApplyFault.init -> void
+ChaosDotNet.Proxies.ChaosProxyOptions.ChaosProxyOptions() -> void
+ChaosDotNet.Proxies.ChaosProxyOptions.CreateCall.get -> System.Func<System.Reflection.MethodInfo!, object?[]!, ChaosDotNet.ChaosCall!>?
+ChaosDotNet.Proxies.ChaosProxyOptions.CreateCall.init -> void
+ChaosDotNet.Proxies.ChaosProxyOptions.Intercept.get -> System.Func<System.Reflection.MethodInfo!, bool>?
+ChaosDotNet.Proxies.ChaosProxyOptions.Intercept.init -> void
+ChaosDotNet.Proxies.ChaosProxyOptions.WrapResult.get -> System.Func<System.Reflection.MethodInfo!, object?, object?>?
+ChaosDotNet.Proxies.ChaosProxyOptions.WrapResult.init -> void
+ChaosDotNet.Proxies.ProxyChaosCall
+ChaosDotNet.Proxies.ProxyChaosCall.Arguments.get -> System.Collections.Generic.IReadOnlyList<object?>!
+ChaosDotNet.Proxies.ProxyChaosCall.Method.get -> System.Reflection.MethodInfo!
+ChaosDotNet.Proxies.ProxyChaosCall.ProxyChaosCall(System.Reflection.MethodInfo! method, object?[]! arguments) -> void
+ChaosDotNet.RepeatBuilder<TSelf, TCall>
+ChaosDotNet.RepeatBuilder<TSelf, TCall>.For(double amount, ChaosDotNet.TimeUnit unit) -> ChaosDotNet.WindowBuilder<TSelf!, TCall!>!
+ChaosDotNet.TimeUnit
+ChaosDotNet.TimeUnit.Hours = 3 -> ChaosDotNet.TimeUnit
+ChaosDotNet.TimeUnit.Milliseconds = 0 -> ChaosDotNet.TimeUnit
+ChaosDotNet.TimeUnit.Minutes = 2 -> ChaosDotNet.TimeUnit
+ChaosDotNet.TimeUnit.Seconds = 1 -> ChaosDotNet.TimeUnit
+ChaosDotNet.WindowBuilder<TSelf, TCall>
+ChaosDotNet.WindowBuilder<TSelf, TCall>.Fail(System.Func<System.Exception!>! exception) -> TSelf!
+ChaosDotNet.WindowBuilder<TSelf, TCall>.Fail(System.Func<TCall!, System.Exception!>! exception) -> TSelf!
+ChaosDotNet.WindowBuilder<TSelf, TCall>.Fail<TException>() -> TSelf!
+ChaosDotNet.WindowBuilder<TSelf, TCall>.Freeze() -> TSelf!
+ChaosDotNet.WindowBuilder<TSelf, TCall>.Inject(ChaosDotNet.Fault! fault) -> TSelf!
+ChaosDotNet.WindowBuilder<TSelf, TCall>.Jitter(double min, double max, ChaosDotNet.TimeUnit unit) -> TSelf!
+ChaosDotNet.WindowBuilder<TSelf, TCall>.Latency(double amount, ChaosDotNet.TimeUnit unit) -> TSelf!
+override ChaosDotNet.ChaosCall.ToString() -> string!
+override ChaosDotNet.ChaosEvent.Equals(object? obj) -> bool
+override ChaosDotNet.ChaosEvent.GetHashCode() -> int
+override ChaosDotNet.ChaosEvent.ToString() -> string!
+override ChaosDotNet.Factories.HttpResponseFault.Name.get -> string!
+override ChaosDotNet.FailFault.Name.get -> string!
+override ChaosDotNet.Fault.ToString() -> string!
+override ChaosDotNet.FreezeFault.Name.get -> string!
+override ChaosDotNet.JitterFault.Name.get -> string!
+override ChaosDotNet.LatencyFault.Name.get -> string!
+override ChaosDotNet.Proxies.ChaosDispatchProxy.Invoke(System.Reflection.MethodInfo? targetMethod, object?[]? args) -> object?
+static ChaosDotNet.ChaosEvent.operator !=(ChaosDotNet.ChaosEvent? left, ChaosDotNet.ChaosEvent? right) -> bool
+static ChaosDotNet.ChaosEvent.operator ==(ChaosDotNet.ChaosEvent? left, ChaosDotNet.ChaosEvent? right) -> bool
+static ChaosDotNet.Factories.HttpFaults.ConnectionClosed(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.HttpFactory!, ChaosDotNet.Factories.HttpChaosCall!>! window) -> ChaosDotNet.Factories.HttpFactory!
+static ChaosDotNet.Factories.HttpFaults.ConnectionRefused(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.HttpFactory!, ChaosDotNet.Factories.HttpChaosCall!>! window) -> ChaosDotNet.Factories.HttpFactory!
+static ChaosDotNet.Factories.HttpFaults.Respond(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.HttpFactory!, ChaosDotNet.Factories.HttpChaosCall!>! window, System.Func<System.Net.Http.HttpRequestMessage!, System.Net.Http.HttpResponseMessage!>! response) -> ChaosDotNet.Factories.HttpFactory!
+static ChaosDotNet.Factories.HttpFaults.Respond(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.HttpFactory!, ChaosDotNet.Factories.HttpChaosCall!>! window, System.Net.HttpStatusCode status, int retryAfterSeconds = 0) -> ChaosDotNet.Factories.HttpFactory!
+static ChaosDotNet.Factories.HttpFaults.Timeout(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.HttpFactory!, ChaosDotNet.Factories.HttpChaosCall!>! window) -> ChaosDotNet.Factories.HttpFactory!
+static ChaosDotNet.Proxies.ChaosProxy.Create<T>(T! target, ChaosDotNet.ChaosEngine! engine, ChaosDotNet.Proxies.ChaosProxyOptions? options = null) -> T!
+static ChaosDotNet.Proxies.ProxyChaosCall.OperationName(System.Reflection.MethodInfo! method) -> string!
+virtual ChaosDotNet.Fault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool

@@ -1,0 +1,10 @@
+#nullable enable
+ChaosDotNet.SqlServerFaults
+static ChaosDotNet.SqlServerFaults.CannotOpenDatabase.get -> System.Func<System.Exception!>!
+static ChaosDotNet.SqlServerFaults.ConnectionReset.get -> System.Func<System.Exception!>!
+static ChaosDotNet.SqlServerFaults.Create(int number, string! message, byte errorClass = 16, byte state = 1) -> Microsoft.Data.SqlClient.SqlException!
+static ChaosDotNet.SqlServerFaults.DatabaseUnavailable.get -> System.Func<System.Exception!>!
+static ChaosDotNet.SqlServerFaults.Deadlock.get -> System.Func<System.Exception!>!
+static ChaosDotNet.SqlServerFaults.ServiceBusy.get -> System.Func<System.Exception!>!
+static ChaosDotNet.SqlServerFaults.Timeout.get -> System.Func<System.Exception!>!
+static ChaosDotNet.SqlServerFaults.UniqueConstraintViolation.get -> System.Func<System.Exception!>!

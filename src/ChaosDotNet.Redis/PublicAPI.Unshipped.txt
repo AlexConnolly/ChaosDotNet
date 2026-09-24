@@ -1,0 +1,12 @@
+#nullable enable
+ChaosDotNet.Factories.RedisChaosCall
+ChaosDotNet.Factories.RedisChaosCall.Channel.get -> string?
+ChaosDotNet.Factories.RedisChaosCall.Key.get -> string?
+ChaosDotNet.Factories.RedisChaosCall.RedisChaosCall(System.Reflection.MethodInfo! method, object?[]! arguments) -> void
+ChaosDotNet.Factories.RedisFactory
+ChaosDotNet.Factories.RedisFactory.Create(StackExchange.Redis.IConnectionMultiplexer! inner) -> StackExchange.Redis.IConnectionMultiplexer!
+ChaosDotNet.Factories.RedisFactory.RedisFactory(ChaosDotNet.ChaosScenario! scenario) -> void
+ChaosDotNet.Factories.RedisFactory.RedisFactory(System.TimeProvider? clock = null, int? seed = null) -> void
+ChaosDotNet.Factories.RedisFaults
+static ChaosDotNet.Factories.RedisFaults.ConnectionFailure(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.RedisFactory!, ChaosDotNet.Factories.RedisChaosCall!>! window) -> ChaosDotNet.Factories.RedisFactory!
+static ChaosDotNet.Factories.RedisFaults.Timeout(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.RedisFactory!, ChaosDotNet.Factories.RedisChaosCall!>! window) -> ChaosDotNet.Factories.RedisFactory!

@@ -1,0 +1,12 @@
+#nullable enable
+ChaosDotNet.Factories.ChaosTimelineStrategyOptions
+ChaosDotNet.Factories.ChaosTimelineStrategyOptions.ChaosTimelineStrategyOptions() -> void
+ChaosDotNet.Factories.PollyChaosCall
+ChaosDotNet.Factories.PollyChaosCall.Context.get -> Polly.ResilienceContext!
+ChaosDotNet.Factories.PollyChaosCall.PollyChaosCall(Polly.ResilienceContext! context) -> void
+ChaosDotNet.Factories.PollyFactory
+ChaosDotNet.Factories.PollyFactory.CreateStrategy() -> Polly.ResilienceStrategy!
+ChaosDotNet.Factories.PollyFactory.PollyFactory(ChaosDotNet.ChaosScenario! scenario) -> void
+ChaosDotNet.Factories.PollyFactory.PollyFactory(System.TimeProvider? clock = null, int? seed = null) -> void
+ChaosDotNet.Factories.PollyFactoryExtensions
+static ChaosDotNet.Factories.PollyFactoryExtensions.AddChaosTimeline<TBuilder>(this TBuilder! builder, ChaosDotNet.Factories.PollyFactory! factory) -> TBuilder!
