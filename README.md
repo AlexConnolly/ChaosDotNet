@@ -222,6 +222,10 @@ A `Freeze()` in a `ForCalls`, `Until` or `Forever` window has no end time. Such 
 
 Derive from `ChaosFactory<TSelf, TCall>` and call `Engine.BeforeCallAsync(call)` (or `Engine.RunAsync(call, realCall)`) in your veneer. Add faults as extension methods on `WindowBuilder<TSelf, TCall>` that call `Inject(fault)`. See `HttpFactory` for a short example.
 
+## Releasing
+
+Push a `v*` tag (for example `v0.1.0-preview`). The Release workflow builds, tests and publishes to NuGet with Trusted Publishing, so no API key is stored in the repo.
+
 ## Building
 
 ```shell
