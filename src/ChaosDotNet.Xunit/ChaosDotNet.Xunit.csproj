@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>[ChaosTheory] for xUnit v3: runs a chaos monkey test once per seed, each seed as its own test case, and shrinks failing plans to the fewest incidents.</Description>
+    <PackageTags>$(PackageTags);xunit</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChaosDotNet\ChaosDotNet.csproj" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
+  </ItemGroup>
+
+</Project>

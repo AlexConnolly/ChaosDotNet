@@ -15,10 +15,12 @@
     <Project Path="src/ChaosDotNet.Redis/ChaosDotNet.Redis.csproj" />
     <Project Path="src/ChaosDotNet.Sql/ChaosDotNet.Sql.csproj" />
     <Project Path="src/ChaosDotNet.SqlServer/ChaosDotNet.SqlServer.csproj" />
+    <Project Path="src/ChaosDotNet.Xunit/ChaosDotNet.Xunit.csproj" />
     <Project Path="src/ChaosDotNet/ChaosDotNet.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ChaosDotNet.IntegrationTests/ChaosDotNet.IntegrationTests.csproj" />
     <Project Path="tests/ChaosDotNet.Tests/ChaosDotNet.Tests.csproj" />
+    <Project Path="tests/ChaosDotNet.Xunit.Tests/ChaosDotNet.Xunit.Tests.csproj" />
   </Folder>
 </Solution>

@@ -88,6 +88,7 @@ Tests stay fast and repeatable: pass a `FakeTimeProvider` and a seed, and a 10-m
 | [`ChaosDotNet.Caching`](https://www.nuget.org/packages/ChaosDotNet.Caching) | `IDistributedCache` | [README](src/ChaosDotNet.Caching/README.md) |
 | [`ChaosDotNet.AzureServiceBus`](https://www.nuget.org/packages/ChaosDotNet.AzureServiceBus) | Azure Service Bus senders, receivers, processors | [README](src/ChaosDotNet.AzureServiceBus/README.md) |
 | [`ChaosDotNet.Polly`](https://www.nuget.org/packages/ChaosDotNet.Polly) | A timeline inside a Polly v8 pipeline | [README](src/ChaosDotNet.Polly/README.md) |
+| [`ChaosDotNet.Xunit`](https://www.nuget.org/packages/ChaosDotNet.Xunit) | `[ChaosTheory]`: one xUnit test case per seed, with shrinking | [README](src/ChaosDotNet.Xunit/README.md) |
 
 All packages target .NET 8 and .NET 10. A full worked example is in [`samples/OrderService.Tests`](samples/OrderService.Tests).
 

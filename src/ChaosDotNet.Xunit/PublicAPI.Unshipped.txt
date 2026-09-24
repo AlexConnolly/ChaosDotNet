@@ -1,0 +1,30 @@
+#nullable enable
+ChaosDotNet.ChaosTheoryAttribute
+ChaosDotNet.ChaosTheoryAttribute.AllowDataLoss.get -> bool
+ChaosDotNet.ChaosTheoryAttribute.AllowDataLoss.set -> void
+ChaosDotNet.ChaosTheoryAttribute.ChaosTheoryAttribute(string? sourceFilePath = null, int sourceLineNumber = -1) -> void
+ChaosDotNet.ChaosTheoryAttribute.CorrelatedFaults.get -> bool
+ChaosDotNet.ChaosTheoryAttribute.CorrelatedFaults.set -> void
+ChaosDotNet.ChaosTheoryAttribute.DurationSeconds.get -> int
+ChaosDotNet.ChaosTheoryAttribute.DurationSeconds.set -> void
+ChaosDotNet.ChaosTheoryAttribute.Intensity.get -> ChaosDotNet.ChaosIntensity
+ChaosDotNet.ChaosTheoryAttribute.Intensity.set -> void
+ChaosDotNet.ChaosTheoryAttribute.MaxConcurrentIncidents.get -> int
+ChaosDotNet.ChaosTheoryAttribute.MaxConcurrentIncidents.set -> void
+ChaosDotNet.ChaosTheoryAttribute.MaxShrinkRuns.get -> int
+ChaosDotNet.ChaosTheoryAttribute.MaxShrinkRuns.set -> void
+ChaosDotNet.ChaosTheoryAttribute.RealTime.get -> bool
+ChaosDotNet.ChaosTheoryAttribute.RealTime.set -> void
+ChaosDotNet.ChaosTheoryAttribute.Runs.get -> int
+ChaosDotNet.ChaosTheoryAttribute.Runs.set -> void
+ChaosDotNet.ChaosTheoryAttribute.Seeds.get -> int[]?
+ChaosDotNet.ChaosTheoryAttribute.Seeds.set -> void
+ChaosDotNet.ChaosTheoryAttribute.Shrink.get -> bool
+ChaosDotNet.ChaosTheoryAttribute.Shrink.set -> void
+ChaosDotNet.Xunit.ChaosTheoryDiscoverer
+ChaosDotNet.Xunit.ChaosTheoryDiscoverer.ChaosTheoryDiscoverer() -> void
+ChaosDotNet.Xunit.ChaosTheoryDiscoverer.Discover(Xunit.Sdk.ITestFrameworkDiscoveryOptions! discoveryOptions, Xunit.v3.IXunitTestMethod! testMethod, Xunit.v3.IFactAttribute! factAttribute) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyCollection<Xunit.v3.IXunitTestCase!>!>
+ChaosDotNet.Xunit.ChaosTheoryTestCase
+ChaosDotNet.Xunit.ChaosTheoryTestCase.ChaosTheoryTestCase() -> void
+ChaosDotNet.Xunit.ChaosTheoryTestCase.Run(Xunit.Sdk.ExplicitOption explicitOption, Xunit.v3.IMessageBus! messageBus, object?[]! constructorArguments, Xunit.v3.ExceptionAggregator aggregator, System.Threading.CancellationTokenSource! cancellationTokenSource, Xunit.Sdk.ParallelMode parallelMode, Xunit.v3.ExecutionScheduler! scheduler, Xunit.v3.FixtureMappingManager! methodFixtureMappings) -> System.Threading.Tasks.ValueTask<Xunit.v3.RunSummary>
+ChaosDotNet.Xunit.ChaosTheoryTestCase.Seed.get -> int
