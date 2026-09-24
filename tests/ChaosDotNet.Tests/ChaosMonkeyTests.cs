@@ -71,18 +71,17 @@ public sealed class ChaosMonkeyTests
     [Fact]
     public void Correlated_incidents_break_every_dependency_in_them_at_the_same_time()
     {
-        var (monkey, first, second, incident) = Enumerable.Range(1, 200).Select(seed =>
+        var (clock, monkey, first, second, incident) = Enumerable.Range(1, 200).Select(seed =>
         {
-            var clock = new FakeTimeProvider();
-            var m = new ChaosMonkey(clock, seed);
+            var c = new FakeTimeProvider();
+            var m = new ChaosMonkey(c, seed);
             var a = new ProxyFactory<IInventory>(m).Named("a").WithMonkeyFaults(Down);
             var b = new ProxyFactory<IInventory>(m).Named("b").WithMonkeyFaults(Down);
             m.Start();
             var shared = m.Plan.Incidents.FirstOrDefault(i => i.Faults.Count == 2 && i.Rate == 1);
-            return (m, a, b, shared);
+            return (c, m, a, b, shared);
         }).First(x => x.shared is not null);
 
-        var clock = (FakeTimeProvider)monkey.Clock;
         var a = first.Create(new Inventory());
         var b = second.Create(new Inventory());
 
@@ -164,20 +163,23 @@ public sealed class ChaosMonkeyTests
         Assert.Throws<InvalidOperationException>(monkey.Start);
     }
 
-    [Fact]
-    public async Task RunAsync_plays_a_whole_plan_on_a_fake_clock_in_a_fraction_of_a_second()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RunAsync_plays_a_whole_plan_on_a_fake_clock_in_a_fraction_of_a_second(bool paceOnMonkeyClock)
     {
-        var clock = new FakeTimeProvider();
-        var monkey = new ChaosMonkey(clock, 5, new ChaosMonkeyOptions { Intensity = ChaosIntensity.High });
+        var fake = new FakeTimeProvider();
+        var monkey = new ChaosMonkey(fake, 5, new ChaosMonkeyOptions { Intensity = ChaosIntensity.High });
+        TimeProvider pace = paceOnMonkeyClock ? monkey.Clock : fake;
         var factory = new ProxyFactory<IInventory>(monkey).Named("inventory");
         var veneer = factory.Create(new Inventory());
-        var start = clock.GetUtcNow();
+        var start = pace.GetUtcNow();
         var timer = Stopwatch.StartNew();
 
         var calls = await monkey.RunAsync(async () =>
         {
             var count = 0;
-            while (clock.GetUtcNow() - start < TimeSpan.FromSeconds(61))
+            while (pace.GetUtcNow() - start < TimeSpan.FromSeconds(61))
             {
                 try
                 {
@@ -188,15 +190,55 @@ public sealed class ChaosMonkeyTests
                 }
 
                 count++;
-                await Task.Delay(TimeSpan.FromSeconds(1), clock);
+                await Task.Delay(TimeSpan.FromSeconds(1), pace);
             }
 
             return count;
         });
 
-        Assert.True(timer.Elapsed < TimeSpan.FromSeconds(20), $"Took {timer.Elapsed}");
+        Assert.True(timer.Elapsed < TimeSpan.FromSeconds(10), $"Took {timer.Elapsed}");
         Assert.InRange(calls, 10, 61);
         Assert.Contains(factory.Log, e => e.Kind == ChaosEventKind.FaultInjected);
+    }
+
+    [Fact]
+    public async Task RunAsync_gives_the_same_history_for_the_same_seed_even_when_the_workload_is_slow()
+    {
+        static async Task<string> History()
+        {
+            var monkey = new ChaosMonkey(new FakeTimeProvider(), 21, new ChaosMonkeyOptions { Intensity = ChaosIntensity.High });
+            var veneer = new ProxyFactory<IInventory>(monkey).Named("inventory").WithMonkeyFaults(Down).Create(new Inventory());
+            var start = monkey.Clock.GetUtcNow();
+            var history = new List<string>();
+
+            await monkey.RunAsync(async () =>
+            {
+                for (var i = 0; i < 40; i++)
+                {
+                    await Task.Run(() => Thread.Sleep(3));
+                    var at = (monkey.Clock.GetUtcNow() - start).TotalSeconds;
+                    try
+                    {
+                        veneer.Count("x");
+                        history.Add($"{at}:ok");
+                    }
+                    catch (ChaosTestException)
+                    {
+                        history.Add($"{at}:fail");
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(1.5), monkey.Clock);
+                }
+            });
+
+            return string.Join(' ', history);
+        }
+
+        var first = await History();
+
+        Assert.Contains("fail", first);
+        Assert.Equal(first, await History());
+        Assert.Equal(first, await History());
     }
 
     [Fact]
@@ -239,7 +281,7 @@ public sealed class ChaosMonkeyTests
 
         static async Task Scenario(ChaosMonkey monkey)
         {
-            var clock = (FakeTimeProvider)monkey.Clock;
+            var clock = monkey.Clock;
             var orders = new ProxyFactory<IInventory>(monkey).Named("orders").WithMonkeyFaults(Down).Create(new Inventory());
             var cache = new ProxyFactory<IInventory>(monkey).Named("cache").WithMonkeyFaults(Down).Create(new Inventory());
             var start = clock.GetUtcNow();

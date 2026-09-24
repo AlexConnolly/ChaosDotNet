@@ -134,7 +134,7 @@ await ChaosMonkey.ExploreAsync(runs: 50, async monkey =>
 
 Each factory has a catalogue of faults the monkey can pick. Change it with `WithMonkeyFaults(...)` or `AddMonkeyFaults(...)`. Factories with hand-written windows are left alone.
 
-Pace the workload on `monkey.Clock`, for example `await Task.Delay(TimeSpan.FromSeconds(2), monkey.Clock)`. For real containers, set `RealTime = true` in `ChaosExploreOptions`.
+`RunAsync` moves a fake clock like a simulation: when the workload has settled, it jumps to the next timer the workload waits on. So the same seed gives the same history on a fast laptop or a slow CI runner. Pace the workload on `monkey.Clock`, for example `await Task.Delay(TimeSpan.FromSeconds(2), monkey.Clock)`; timers on other clocks still work, but the monkey falls back to fixed steps. For real containers, set `RealTime = true` in `ChaosExploreOptions`.
 
 ## Limits
 

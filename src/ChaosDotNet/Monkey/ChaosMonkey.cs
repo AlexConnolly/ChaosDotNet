@@ -32,7 +32,7 @@ public sealed class ChaosMonkey : ChaosScenario
     }
 
     internal ChaosMonkey(TimeProvider? clock, int? seed, ChaosMonkeyOptions? options, IReadOnlySet<int>? only)
-        : base(clock, seed)
+        : base(clock is FakeTimeProvider fake ? new ChaosClock(fake) : clock, seed)
     {
         Options = options ?? new ChaosMonkeyOptions();
         _only = only;
@@ -51,11 +51,12 @@ public sealed class ChaosMonkey : ChaosScenario
     public ChaosPlan Plan => _plan ?? new ChaosPlan(Seed, [], _only);
 
     /// <summary>
-    /// Starts the monkey, runs the workload, and waits for it. With a <see cref="FakeTimeProvider"/> clock, the clock moves
-    /// forward in steps while the workload runs, so the whole plan plays out in a fraction of a second.
+    /// Starts the monkey, runs the workload, and waits for it. With a <see cref="FakeTimeProvider"/> clock, time moves like a
+    /// simulation: when the workload has settled, the clock jumps to the next timer it waits on. The same seed then gives the same
+    /// history on any machine, and a whole plan plays out in a fraction of a second. Pace the workload on <see cref="ChaosScenario.Clock"/>.
     /// </summary>
     /// <param name="workload">The code to run under chaos.</param>
-    /// <param name="stepMilliseconds">How far a fake clock moves each step. Defaults to 100 ms.</param>
+    /// <param name="stepMilliseconds">How far a fake clock moves when the workload waits on nothing the monkey can see. Defaults to 100 ms.</param>
     public async Task RunAsync(Func<Task> workload, double stepMilliseconds = 100)
     {
         ArgumentNullException.ThrowIfNull(workload);
@@ -67,11 +68,12 @@ public sealed class ChaosMonkey : ChaosScenario
     }
 
     /// <summary>
-    /// Starts the monkey, runs the workload, and returns its result. With a <see cref="FakeTimeProvider"/> clock, the clock moves
-    /// forward in steps while the workload runs, so the whole plan plays out in a fraction of a second.
+    /// Starts the monkey, runs the workload, and returns its result. With a <see cref="FakeTimeProvider"/> clock, time moves like a
+    /// simulation: when the workload has settled, the clock jumps to the next timer it waits on. The same seed then gives the same
+    /// history on any machine, and a whole plan plays out in a fraction of a second. Pace the workload on <see cref="ChaosScenario.Clock"/>.
     /// </summary>
     /// <param name="workload">The code to run under chaos.</param>
-    /// <param name="stepMilliseconds">How far a fake clock moves each step. Defaults to 100 ms.</param>
+    /// <param name="stepMilliseconds">How far a fake clock moves when the workload waits on nothing the monkey can see. Defaults to 100 ms.</param>
     public async Task<T> RunAsync<T>(Func<Task<T>> workload, double stepMilliseconds = 100)
     {
         ArgumentNullException.ThrowIfNull(workload);
@@ -79,28 +81,9 @@ public sealed class ChaosMonkey : ChaosScenario
 
         Start();
         var run = Task.Run(workload);
-        if (Clock is FakeTimeProvider fake)
+        if (Clock is ChaosClock clock)
         {
-            var step = TimeSpan.FromMilliseconds(stepMilliseconds);
-            var timer = Stopwatch.StartNew();
-            var steps = 0;
-            while (!run.IsCompleted)
-            {
-                fake.Advance(step);
-                if (++steps % 100 == 0)
-                {
-                    await Task.WhenAny(run, Task.Delay(1)).ConfigureAwait(false);
-                }
-                else
-                {
-                    await Task.Yield();
-                }
-
-                if (timer.Elapsed > Options.RunTimeout)
-                {
-                    throw new TimeoutException($"The workload did not finish within {Options.RunTimeout} of real time.{Environment.NewLine}{Plan}");
-                }
-            }
+            await PlayAsync(clock, run, TimeSpan.FromMilliseconds(stepMilliseconds)).ConfigureAwait(false);
         }
 
         try
@@ -122,6 +105,69 @@ public sealed class ChaosMonkey : ChaosScenario
     /// <param name="options">The settings.</param>
     public static Task ExploreAsync(int runs, Func<ChaosMonkey, Task> scenario, ChaosExploreOptions? options = null) =>
         ChaosExplorer.ExploreAsync(runs, scenario, options ?? new ChaosExploreOptions());
+
+    /// <summary>
+    /// Moves a fake clock like a simulation: wait until the workload has settled, then jump to the next timer it waits on.
+    /// Time only moves while the workload waits, so the same seed gives the same history on a fast or a slow machine.
+    /// </summary>
+    private async Task PlayAsync(ChaosClock clock, Task run, TimeSpan fallbackStep)
+    {
+        var timer = Stopwatch.StartNew();
+        var created = 0;
+        var untrackedRounds = 0;
+        while (!run.IsCompleted)
+        {
+            // After a few rounds with no new tracked timer, the workload is not waiting on monkey.Clock: stop waiting for one.
+            await SettleAsync(run, clock, created, untrackedRounds > 3 ? 1 : 50).ConfigureAwait(false);
+            untrackedRounds = clock.TimersCreated == created ? untrackedRounds + 1 : 0;
+            created = clock.TimersCreated;
+            if (run.IsCompleted)
+            {
+                break;
+            }
+
+            if (timer.Elapsed > Options.RunTimeout)
+            {
+                throw new TimeoutException($"The workload did not finish within {Options.RunTimeout} of real time.{Environment.NewLine}{Plan}");
+            }
+
+            if (clock.NextDue() is { } due)
+            {
+                var wait = due - clock.GetUtcNow();
+                clock.Advance(wait > TimeSpan.Zero ? wait : TimeSpan.FromTicks(1));
+                continue;
+            }
+
+            // No timer to jump to: the workload is doing real I/O, or waits on a clock other than monkey.Clock.
+            await Task.Yield();
+            if (!run.IsCompleted && clock.NextDue() is null)
+            {
+                clock.Advance(fallbackStep);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Waits until the workload has settled: it has created a new timer since the last move (it is waiting again) and no
+    /// thread-pool work is queued. Gives up after <paramref name="limitMilliseconds"/> of real time, for workloads that wait on something else.
+    /// </summary>
+    private static async Task SettleAsync(Task run, ChaosClock clock, int createdBefore, int limitMilliseconds)
+    {
+        var limit = Stopwatch.StartNew();
+        while (!run.IsCompleted && limit.ElapsedMilliseconds < limitMilliseconds)
+        {
+            if (clock.TimersCreated > createdBefore && ThreadPool.PendingWorkItemCount == 0)
+            {
+                await Task.Yield();
+                if (ThreadPool.PendingWorkItemCount == 0)
+                {
+                    return;
+                }
+            }
+
+            await Task.Yield();
+        }
+    }
 
     private protected override void OnStarting(IReadOnlyList<ChaosEngine> engines)
     {
