@@ -1,4 +1,5 @@
 #nullable enable
+ChaosDotNet.DependencyInjection.ChaosServicesSqlExtensions
 ChaosDotNet.Factories.ChaosDbException
 ChaosDotNet.Factories.ChaosDbException.ChaosDbException(string! message, System.Exception? innerException = null) -> void
 ChaosDotNet.Factories.DbFaults
@@ -18,6 +19,7 @@ override ChaosDotNet.Factories.ChaosDbException.IsTransient.get -> bool
 override ChaosDotNet.Factories.ReaderFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
 override ChaosDotNet.Factories.ReaderFault.Name.get -> string!
 override ChaosDotNet.Factories.SqlChaosCall.Details.get -> string?
+static ChaosDotNet.DependencyInjection.ChaosServicesSqlExtensions.Sql(this ChaosDotNet.DependencyInjection.ChaosServicesBuilder! builder, ChaosDotNet.DependencyInjection.ChaosStrategy strategy = ChaosDotNet.DependencyInjection.ChaosStrategy.Proxy, System.Func<System.IServiceProvider!, System.Data.Common.DbDataSource!>? dataSource = null, System.Action<ChaosDotNet.Factories.SqlFactory!>? configure = null, string! name = "sql") -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 static ChaosDotNet.Factories.DbFaults.BreakReaderMidway(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.SqlFactory!, ChaosDotNet.Factories.SqlChaosCall!>! window, System.Func<System.Exception!>? exception = null) -> ChaosDotNet.Factories.SqlFactory!
 static ChaosDotNet.Factories.DbFaults.Catalogue(System.Func<System.Exception!>! connectionFailure, System.Func<System.Exception!>! timeout, params System.Func<System.Exception!>![]! errors) -> System.Collections.Generic.IReadOnlyList<ChaosDotNet.MonkeyFault!>!
 static ChaosDotNet.Factories.DbFaults.CommandTimeout(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.SqlFactory!, ChaosDotNet.Factories.SqlChaosCall!>! window) -> ChaosDotNet.Factories.SqlFactory!

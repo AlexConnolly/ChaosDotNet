@@ -25,7 +25,7 @@ Plus `Freeze()`, `Latency(...)`, `Jitter(...)`, `Fail(...)` and `FailRandomly(..
 
 ## Dependency injection
 
-`services.AddChaosMonkey(monkey, chaos => chaos.DistributedCache())` wraps the registered `IDistributedCache`, named `cache`.
+`services.AddChaosMonkey(monkey, chaos => chaos.DistributedCache())` wraps the registered `IDistributedCache`, named `cache`. `chaos.DistributedCache(ChaosStrategy.Replace)` drops the app's cache and uses an in-memory one instead.
 
 ## Chaos monkey
 

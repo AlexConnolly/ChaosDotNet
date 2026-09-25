@@ -30,7 +30,7 @@ Plus `Freeze()`, `Latency(...)`, `Jitter(...)`, `Fail(...)` and `FailRandomly(..
 
 ## Dependency injection
 
-`services.AddChaosMonkey(monkey, chaos => chaos.Redis())` wraps the registered `IConnectionMultiplexer`, named `redis`.
+`services.AddChaosMonkey(monkey, chaos => chaos.Redis())` wraps the registered `IConnectionMultiplexer`, named `redis`. `chaos.Redis(ChaosStrategy.Replace, "localhost:6379")` drops the app's multiplexer and connects a new one instead.
 
 ## Chaos monkey
 

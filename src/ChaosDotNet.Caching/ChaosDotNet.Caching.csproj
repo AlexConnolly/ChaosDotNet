@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ChaosDotNet\ChaosDotNet.csproj" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" VersionOverride="8.0.1" />
   </ItemGroup>
 
 </Project>

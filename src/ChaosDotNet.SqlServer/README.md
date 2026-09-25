@@ -22,6 +22,12 @@ new SqlFactory().ForCalls(2).Fail(SqlServerFaults.Deadlock);
 | `SqlServerFaults.RandomTransient` | A random transient number each call |
 | `SqlServerFaults.Create(number, message)` | Any error |
 
+## Dependency injection
+
+`services.AddChaosMonkey(monkey, chaos => chaos.SqlServer())` wraps the registered `DbDataSource` and `DbConnection`, named `sqlserver`, with SqlServer errors. The app's own pooler or data source still runs.
+
+`chaos.SqlServer(ChaosStrategy.Replace, "Server=localhost;Database=shop;Trusted_Connection=True")` drops the app's registrations and uses a standard data source from the connection string instead. Only code that asks for `DbDataSource` or `DbConnection` gets chaos.
+
 ## Chaos monkey
 
 ```csharp

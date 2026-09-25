@@ -201,16 +201,23 @@ ChaosDotNet.ChaosVerifier.RecoveredWithin(double amount, ChaosDotNet.TimeUnit un
 ChaosDotNet.DependencyInjection.ChaosServiceCollectionExtensions
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Add(System.Action! step) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Clock(ChaosDotNet.DependencyInjection.ChaosStrategy strategy, System.Action<ChaosDotNet.Factories.ClockFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Clock(System.Action<ChaosDotNet.Factories.ClockFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Decorate<TService>(System.Func<System.IServiceProvider!, TService!, TService!>! wrap) -> void
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Except(params string![]! names) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Http(ChaosDotNet.DependencyInjection.ChaosStrategy strategy, System.Action<string!, ChaosDotNet.Factories.HttpFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Http(System.Action<string!, ChaosDotNet.Factories.HttpFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Interface<T>(ChaosDotNet.DependencyInjection.ChaosStrategy strategy, System.Action<ChaosDotNet.ChaosSubject<T!>!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Interface<T>(System.Action<ChaosDotNet.Factories.ProxyFactory<T!>!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder.IsExcluded(string! name) -> bool
+ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Replace<TService>(System.Func<System.IServiceProvider!, TService!>! create, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton) -> void
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Scenario.get -> ChaosDotNet.ChaosScenario!
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Track(string! name) -> void
 ChaosDotNet.DependencyInjection.ChaosServicesBuilder.Wrapped.get -> System.Collections.Generic.IReadOnlyList<string!>!
+ChaosDotNet.DependencyInjection.ChaosStrategy
+ChaosDotNet.DependencyInjection.ChaosStrategy.Proxy = 0 -> ChaosDotNet.DependencyInjection.ChaosStrategy
+ChaosDotNet.DependencyInjection.ChaosStrategy.Replace = 1 -> ChaosDotNet.DependencyInjection.ChaosStrategy
 ChaosDotNet.Factories.BreakBodyFault
 ChaosDotNet.Factories.BreakBodyFault.BreakBodyFault() -> void
 ChaosDotNet.Factories.ClockCall
@@ -219,6 +226,7 @@ ChaosDotNet.Factories.ClockFactory
 ChaosDotNet.Factories.ClockFactory.ClockFactory(ChaosDotNet.ChaosScenario! scenario) -> void
 ChaosDotNet.Factories.ClockFactory.ClockFactory(System.TimeProvider? clock = null, int? seed = null) -> void
 ChaosDotNet.Factories.ClockFactory.Create() -> System.TimeProvider!
+ChaosDotNet.Factories.ClockFactory.Create(System.TimeProvider! inner) -> System.TimeProvider!
 ChaosDotNet.Factories.ClockFault
 ChaosDotNet.Factories.ClockFaults
 ChaosDotNet.Factories.HttpChaosCall

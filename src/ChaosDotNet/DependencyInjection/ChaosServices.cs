@@ -109,8 +109,29 @@ public sealed class ChaosServicesBuilder
 
         if (!found)
         {
-            throw new InvalidOperationException($"No {typeof(TService).Name} is registered, so there is nothing to wrap. Call AddChaosMonkey after the app registers its services.");
+            throw new InvalidOperationException($"No {typeof(TService).Name} is registered, so there is nothing to wrap. Call AddChaosMonkey after the app registers its services, or use ChaosStrategy.Replace.");
         }
+    }
+
+    /// <summary>
+    /// Removes every non-keyed registration of <typeparamref name="TService"/> and registers <paramref name="create"/> in their
+    /// place, so none of the app's own logic for it runs. Keeps the lifetime of the app's registration, or uses
+    /// <paramref name="lifetime"/> when there was none.
+    /// </summary>
+    public void Replace<TService>(Func<IServiceProvider, TService> create, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TService : class
+    {
+        ArgumentNullException.ThrowIfNull(create);
+        for (var i = Services.Count - 1; i >= 0; i--)
+        {
+            if (Services[i].ServiceType == typeof(TService) && !Services[i].IsKeyedService)
+            {
+                lifetime = Services[i].Lifetime;
+                Services.RemoveAt(i);
+            }
+        }
+
+        Services.Add(ServiceDescriptor.Describe(typeof(TService), create, lifetime));
     }
 
     /// <summary>
@@ -118,7 +139,19 @@ public sealed class ChaosServicesBuilder
     /// <see cref="HttpFactory"/>, named <c>http:{client name}</c>, as its innermost handler, so resilience handlers see the faults.
     /// </summary>
     /// <param name="configure">Gives each client's factory a hand-written timeline. Leave it out to let the monkey decide.</param>
-    public ChaosServicesBuilder Http(Action<string, HttpFactory>? configure = null) => Add(() =>
+    public ChaosServicesBuilder Http(Action<string, HttpFactory>? configure = null) => Http(ChaosStrategy.Proxy, configure);
+
+    /// <summary>
+    /// Adds chaos to every named and typed <see cref="HttpClient"/> from <c>IHttpClientFactory</c>. Each client gets its own
+    /// <see cref="HttpFactory"/>, named <c>http:{client name}</c>.
+    /// </summary>
+    /// <param name="strategy">
+    /// <see cref="ChaosStrategy.Proxy"/> keeps each client's handlers and adds chaos as the innermost handler, so resilience
+    /// handlers see the faults. <see cref="ChaosStrategy.Replace"/> drops the client's handlers and primary handler and sends
+    /// requests through chaos to a new <see cref="SocketsHttpHandler"/>. Base addresses and headers are kept.
+    /// </param>
+    /// <param name="configure">Gives each client's factory a hand-written timeline. Leave it out to let the monkey decide.</param>
+    public ChaosServicesBuilder Http(ChaosStrategy strategy, Action<string, HttpFactory>? configure = null) => Add(() =>
     {
         var names = Services
             .Where(d => d.ServiceType == typeof(IConfigureOptions<HttpClientFactoryOptions>))
@@ -145,7 +178,19 @@ public sealed class ChaosServicesBuilder
             var factory = new HttpFactory(Scenario).Named(name);
             configure?.Invoke(clientName, factory);
             Services.Configure<HttpClientFactoryOptions>(clientName, options =>
-                options.HttpMessageHandlerBuilderActions.Add(handlers => handlers.AdditionalHandlers.Add(factory.CreateHandler())));
+            {
+                if (strategy == ChaosStrategy.Replace)
+                {
+                    options.HttpMessageHandlerBuilderActions.Clear();
+                    options.HttpMessageHandlerBuilderActions.Add(handlers =>
+                    {
+                        handlers.PrimaryHandler = new SocketsHttpHandler();
+                        handlers.AdditionalHandlers.Clear();
+                    });
+                }
+
+                options.HttpMessageHandlerBuilderActions.Add(handlers => handlers.AdditionalHandlers.Add(factory.CreateHandler()));
+            });
             Track(name);
         }
     });
@@ -155,7 +200,16 @@ public sealed class ChaosServicesBuilder
     /// <c>clock</c>. Registers one if the app has none.
     /// </summary>
     /// <param name="configure">Gives the clock a hand-written timeline. Leave it out to let the monkey decide.</param>
-    public ChaosServicesBuilder Clock(Action<ClockFactory>? configure = null) => Add(() =>
+    public ChaosServicesBuilder Clock(Action<ClockFactory>? configure = null) => Clock(ChaosStrategy.Replace, configure);
+
+    /// <summary>Adds chaos to the app's <see cref="TimeProvider"/> with a <see cref="ClockFactory"/> named <c>clock</c>.</summary>
+    /// <param name="strategy">
+    /// <see cref="ChaosStrategy.Replace"/> (the default for <see cref="Clock(Action{ClockFactory})"/>) swaps the app's clock for a
+    /// veneer over the scenario's clock, so a fake scenario clock drives the app and plans replay the same way.
+    /// <see cref="ChaosStrategy.Proxy"/> bends the app's own clock instead, or <see cref="TimeProvider.System"/> when it has none.
+    /// </param>
+    /// <param name="configure">Gives the clock a hand-written timeline. Leave it out to let the monkey decide.</param>
+    public ChaosServicesBuilder Clock(ChaosStrategy strategy, Action<ClockFactory>? configure = null) => Add(() =>
     {
         if (IsExcluded("clock"))
         {
@@ -164,15 +218,19 @@ public sealed class ChaosServicesBuilder
 
         var factory = new ClockFactory(Scenario).Named("clock");
         configure?.Invoke(factory);
-        for (var i = Services.Count - 1; i >= 0; i--)
+        if (strategy == ChaosStrategy.Replace)
         {
-            if (Services[i].ServiceType == typeof(TimeProvider) && !Services[i].IsKeyedService)
-            {
-                Services.RemoveAt(i);
-            }
+            Replace(_ => factory.Create());
+        }
+        else if (Services.Any(d => d.ServiceType == typeof(TimeProvider) && !d.IsKeyedService))
+        {
+            Decorate<TimeProvider>((_, inner) => factory.Create(inner));
+        }
+        else
+        {
+            Services.AddSingleton(_ => factory.Create(TimeProvider.System));
         }
 
-        Services.AddSingleton(_ => factory.Create());
         Track("clock");
     });
 
@@ -190,6 +248,36 @@ public sealed class ChaosServicesBuilder
         var factory = new ProxyFactory<T>(Scenario).Named(name);
         configure?.Invoke(factory);
         Decorate<T>((_, inner) => factory.Create(inner));
+        Track(name);
+    });
+
+    /// <summary>Adds chaos to the interface <typeparamref name="T"/> with a <see cref="ChaosSubject{T}"/>, named after the interface.</summary>
+    /// <param name="strategy">
+    /// <see cref="ChaosStrategy.Proxy"/> puts the subject over each registration: calls with a setup use it, others reach the
+    /// app's implementation. <see cref="ChaosStrategy.Replace"/> removes the app's implementation: the subject answers every
+    /// call from its setups, or with default values.
+    /// </param>
+    /// <param name="configure">Adds setups and a hand-written timeline. Leave it out to let the monkey decide.</param>
+    public ChaosServicesBuilder Interface<T>(ChaosStrategy strategy, Action<ChaosSubject<T>>? configure = null)
+        where T : class => Add(() =>
+    {
+        var name = typeof(T).Name;
+        if (IsExcluded(name))
+        {
+            return;
+        }
+
+        var subject = new ChaosSubject<T>(Scenario).Named(name);
+        configure?.Invoke(subject);
+        if (strategy == ChaosStrategy.Replace)
+        {
+            Replace(_ => subject.Create());
+        }
+        else
+        {
+            Decorate<T>((_, inner) => subject.Create(inner));
+        }
+
         Track(name);
     });
 

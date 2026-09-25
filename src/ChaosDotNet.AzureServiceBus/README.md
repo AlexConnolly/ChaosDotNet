@@ -33,7 +33,7 @@ Plus `Freeze()`, `Latency(...)`, `Jitter(...)`, `Fail(...)` and `FailRandomly(..
 
 ## Dependency injection
 
-`services.AddChaosMonkey(monkey, chaos => chaos.ServiceBus())` wraps the registered `ServiceBusClient`, named `servicebus`.
+`services.AddChaosMonkey(monkey, chaos => chaos.ServiceBus())` wraps the registered `ServiceBusClient`, named `servicebus`. `chaos.ServiceBus(ChaosStrategy.Replace, connectionString)` drops the app's client and creates a new one instead.
 
 ## Chaos monkey
 

@@ -22,6 +22,12 @@ new SqlFactory().ForCalls(2).Fail(NpgsqlFaults.Deadlock);
 | `NpgsqlFaults.Timeout` | (client) | Yes |
 | `NpgsqlFaults.Create(sqlState, message)` | Any | By SQLSTATE |
 
+## Dependency injection
+
+`services.AddChaosMonkey(monkey, chaos => chaos.Npgsql())` wraps the registered `DbDataSource` and `DbConnection`, named `postgres`, with Npgsql errors. The app's own pooler or data source still runs.
+
+`chaos.Npgsql(ChaosStrategy.Replace, "Host=localhost;Database=shop;Username=app;Password=secret")` drops the app's registrations and uses a standard data source from the connection string instead. Only code that asks for `DbDataSource` or `DbConnection` gets chaos.
+
 ## Chaos monkey
 
 ```csharp

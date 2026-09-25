@@ -37,9 +37,16 @@ public sealed class ClockFactory : ChaosFactory<ClockFactory, ClockCall>
     }
 
     /// <summary>Creates a chaotic <see cref="TimeProvider"/> over the factory's clock and starts the timeline if it has not started.</summary>
-    public TimeProvider Create()
+    public TimeProvider Create() => Create(Engine.Clock);
+
+    /// <summary>
+    /// Creates a chaotic <see cref="TimeProvider"/> over <paramref name="inner"/> and starts the timeline if it has not started.
+    /// The timeline's windows still follow the factory's clock.
+    /// </summary>
+    public TimeProvider Create(TimeProvider inner)
     {
-        var veneer = new ChaosTimeProvider(Engine.Clock, Engine);
+        ArgumentNullException.ThrowIfNull(inner);
+        var veneer = new ChaosTimeProvider(inner, Engine);
         Engine.Start();
         return veneer;
     }

@@ -13,9 +13,28 @@ public static class ChaosServicesEntityFrameworkCoreExtensions
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <param name="configure">Gives each context's factory a hand-written timeline. Leave it out to let the monkey decide.</param>
-    public static ChaosServicesBuilder EntityFrameworkCore(this ChaosServicesBuilder builder, Action<Type, SqlFactory>? configure = null)
+    public static ChaosServicesBuilder EntityFrameworkCore(this ChaosServicesBuilder builder, Action<Type, SqlFactory>? configure = null) =>
+        builder.EntityFrameworkCore(ChaosStrategy.Proxy, configure);
+
+    /// <summary>
+    /// Adds a <see cref="SqlFactory"/> interceptor to every registered <see cref="DbContext"/>. Each context gets its own factory,
+    /// named <c>sql:{context type}</c>.
+    /// </summary>
+    /// <param name="builder">The builder.</param>
+    /// <param name="strategy">
+    /// Only <see cref="ChaosStrategy.Proxy"/>: a context's provider setup belongs to the app, so it cannot be replaced. To drop
+    /// the app's own connection logic, replace the data source instead, for example with <c>Npgsql(ChaosStrategy.Replace, ...)</c>.
+    /// </param>
+    /// <param name="configure">Gives each context's factory a hand-written timeline. Leave it out to let the monkey decide.</param>
+    public static ChaosServicesBuilder EntityFrameworkCore(this ChaosServicesBuilder builder, ChaosStrategy strategy, Action<Type, SqlFactory>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        if (strategy == ChaosStrategy.Replace)
+        {
+            throw new NotSupportedException(
+                "EF Core contexts can only be proxied: their provider setup belongs to the app. To drop the app's connection logic, replace the data source instead, for example Npgsql(ChaosStrategy.Replace, connectionString).");
+        }
+
         return builder.Add(() =>
         {
             var contexts = builder.Services

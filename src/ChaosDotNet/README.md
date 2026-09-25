@@ -183,12 +183,40 @@ using var app = new WebApplicationFactory<Program>().WithWebHostBuilder(host => 
         .ServiceBus()                  // ServiceBusClient (ChaosDotNet.AzureServiceBus)
         .Clock()                       // the app's TimeProvider
         .Interface<IPaymentGateway>()  // any interface
+        .Npgsql()                      // DbDataSource and DbConnection (ChaosDotNet.Npgsql)
         .Except("http:health"))));
 ```
 
-Dependencies are named `http:{client}`, `sql:{context}`, `redis`, `cache`, `servicebus`, `clock` and the interface name. Lifetimes are kept. Call it after the app's own registrations; it throws if there is nothing to wrap. Named HTTP clients are found once they have any configuration (a base address or a handler); typed clients are always found.
+Dependencies are named `http:{client}`, `sql:{context}`, `postgres`, `sqlserver`, `sql`, `redis`, `cache`, `servicebus`, `clock` and the interface name. Lifetimes are kept. Call it after the app's own registrations; it throws if there is nothing to wrap. Named HTTP clients are found once they have any configuration (a base address or a handler); typed clients are always found.
 
 `AddChaos(scenario, ...)` does the same with hand-written timelines, for example `chaos.Http((name, f) => f.ForCalls(3).Respond(HttpStatusCode.ServiceUnavailable))`.
+
+### Proxy or replace
+
+Each client takes a `ChaosStrategy`:
+
+- `Proxy` keeps the app's registration and puts chaos on top. The app's own logic (its pooler, handlers or wrapper) still runs.
+- `Replace` removes the app's registrations and registers ChaosDotNet's standard client, with chaos on top. The app's own logic is dropped, and calls still reach the real infrastructure.
+
+```csharp
+services.AddChaosMonkey(monkey, chaos => chaos
+    .Npgsql(ChaosStrategy.Replace, connectionString)    // drop the app's pooler, use a standard NpgsqlDataSource
+    .Http(ChaosStrategy.Replace)                         // drop the app's handlers, send through a new SocketsHttpHandler
+    .Redis(ChaosStrategy.Proxy));                        // keep the app's multiplexer
+```
+
+| Client | Default | `Replace` uses |
+| --- | --- | --- |
+| `Http()` | Proxy | A new `SocketsHttpHandler`. The client's handlers are dropped; base address and headers are kept. |
+| `Npgsql()`, `SqlServer()`, `Sql()` | Proxy | A standard data source from the connection string (`Sql()` takes a `DbDataSource` factory). |
+| `Redis()` | Proxy | `ConnectionMultiplexer.Connect(configuration)` |
+| `ServiceBus()` | Proxy | `new ServiceBusClient(connectionString)` |
+| `DistributedCache()` | Proxy | An in-memory cache |
+| `Interface<T>()` | Proxy | A `ChaosSubject<T>`: it answers from its setups, or with default values |
+| `Clock()` | Replace | A clock over the scenario's clock. `Proxy` bends the app's own `TimeProvider` instead. |
+| `EntityFrameworkCore()` | Proxy | Not supported: the provider setup belongs to the app. Replace its data source instead. |
+
+`Replace` keeps the lifetime of the app's registration. For your own services, `chaos.Replace<T>(provider => ...)` and `chaos.Decorate<T>((provider, inner) => ...)` do the same by hand.
 
 ## Add the monkey to what you already have
 

@@ -1,5 +1,7 @@
 #nullable enable
+ChaosDotNet.DependencyInjection.ChaosServicesNpgsqlExtensions
 ChaosDotNet.NpgsqlFaults
+static ChaosDotNet.DependencyInjection.ChaosServicesNpgsqlExtensions.Npgsql(this ChaosDotNet.DependencyInjection.ChaosServicesBuilder! builder, ChaosDotNet.DependencyInjection.ChaosStrategy strategy = ChaosDotNet.DependencyInjection.ChaosStrategy.Proxy, string? connectionString = null, System.Action<ChaosDotNet.Factories.SqlFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 static ChaosDotNet.NpgsqlFaults.AdminShutdown.get -> System.Func<System.Exception!>!
 static ChaosDotNet.NpgsqlFaults.ConnectionLost.get -> System.Func<System.Exception!>!
 static ChaosDotNet.NpgsqlFaults.Create(string! sqlState, string! message, string! severity = "ERROR") -> Npgsql.PostgresException!

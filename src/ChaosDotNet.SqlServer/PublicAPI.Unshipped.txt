@@ -1,5 +1,7 @@
 #nullable enable
+ChaosDotNet.DependencyInjection.ChaosServicesSqlServerExtensions
 ChaosDotNet.SqlServerFaults
+static ChaosDotNet.DependencyInjection.ChaosServicesSqlServerExtensions.SqlServer(this ChaosDotNet.DependencyInjection.ChaosServicesBuilder! builder, ChaosDotNet.DependencyInjection.ChaosStrategy strategy = ChaosDotNet.DependencyInjection.ChaosStrategy.Proxy, string? connectionString = null, System.Action<ChaosDotNet.Factories.SqlFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 static ChaosDotNet.SqlServerFaults.CannotOpenDatabase.get -> System.Func<System.Exception!>!
 static ChaosDotNet.SqlServerFaults.ConnectionReset.get -> System.Func<System.Exception!>!
 static ChaosDotNet.SqlServerFaults.Create(int number, string! message, byte errorClass = 16, byte state = 1) -> Microsoft.Data.SqlClient.SqlException!

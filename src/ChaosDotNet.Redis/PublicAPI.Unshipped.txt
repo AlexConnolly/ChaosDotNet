@@ -16,6 +16,7 @@ ChaosDotNet.Factories.RedisValueFault.RedisValueFault(System.Random! random, boo
 override ChaosDotNet.Factories.RedisChaosCall.Details.get -> string?
 override ChaosDotNet.Factories.RedisValueFault.AppliesTo(ChaosDotNet.ChaosCall! call) -> bool
 override ChaosDotNet.Factories.RedisValueFault.Name.get -> string!
+static ChaosDotNet.DependencyInjection.ChaosServicesRedisExtensions.Redis(this ChaosDotNet.DependencyInjection.ChaosServicesBuilder! builder, ChaosDotNet.DependencyInjection.ChaosStrategy strategy, string? configuration = null, System.Action<ChaosDotNet.Factories.RedisFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 static ChaosDotNet.DependencyInjection.ChaosServicesRedisExtensions.Redis(this ChaosDotNet.DependencyInjection.ChaosServicesBuilder! builder, System.Action<ChaosDotNet.Factories.RedisFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 static ChaosDotNet.Factories.RedisFaults.ConnectionFailure(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.RedisFactory!, ChaosDotNet.Factories.RedisChaosCall!>! window) -> ChaosDotNet.Factories.RedisFactory!
 static ChaosDotNet.Factories.RedisFaults.CorruptValues(this ChaosDotNet.WindowBuilder<ChaosDotNet.Factories.RedisFactory!, ChaosDotNet.Factories.RedisChaosCall!>! window) -> ChaosDotNet.Factories.RedisFactory!

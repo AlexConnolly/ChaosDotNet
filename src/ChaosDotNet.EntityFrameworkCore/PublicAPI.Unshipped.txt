@@ -1,5 +1,6 @@
 #nullable enable
 ChaosDotNet.DependencyInjection.ChaosServicesEntityFrameworkCoreExtensions
 ChaosDotNet.Factories.SqlFactoryEntityFrameworkCoreExtensions
+static ChaosDotNet.DependencyInjection.ChaosServicesEntityFrameworkCoreExtensions.EntityFrameworkCore(this ChaosDotNet.DependencyInjection.ChaosServicesBuilder! builder, ChaosDotNet.DependencyInjection.ChaosStrategy strategy, System.Action<System.Type!, ChaosDotNet.Factories.SqlFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 static ChaosDotNet.DependencyInjection.ChaosServicesEntityFrameworkCoreExtensions.EntityFrameworkCore(this ChaosDotNet.DependencyInjection.ChaosServicesBuilder! builder, System.Action<System.Type!, ChaosDotNet.Factories.SqlFactory!>? configure = null) -> ChaosDotNet.DependencyInjection.ChaosServicesBuilder!
 static ChaosDotNet.Factories.SqlFactoryEntityFrameworkCoreExtensions.CreateInterceptor(this ChaosDotNet.Factories.SqlFactory! factory) -> Microsoft.EntityFrameworkCore.Diagnostics.IInterceptor!

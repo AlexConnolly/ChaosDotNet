@@ -39,6 +39,10 @@ new SqlFactory()
 
 Plus `Freeze()`, `Latency(...)`, `Jitter(...)`, `Fail(...)` and `FailRandomly(...)` from the core.
 
+## Dependency injection
+
+`services.AddChaosMonkey(monkey, chaos => chaos.Sql())` wraps the registered `DbDataSource` and `DbConnection`, named `sql`. `chaos.Sql(ChaosStrategy.Replace, provider => myFactory.CreateDataSource(connectionString))` drops the app's registrations and uses that data source instead. For PostgreSQL and SQL Server errors, use `Npgsql()` or `SqlServer()` from their packages.
+
 ## Chaos monkey
 
 The default catalogue is connection failures, command timeouts, readers that break midway, freeze, latency and jitter, with generic `DbException`s. Call `UseSqlServerFaults()` or `UseNpgsqlFaults()` to use real provider exceptions instead.
