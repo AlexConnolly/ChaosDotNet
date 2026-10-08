@@ -36,4 +36,8 @@ internal sealed record TestResults(IReadOnlySet<string> Passed, IReadOnlyDiction
     /// <summary>Tests that failed here but passed in <paramref name="baseline"/>: the ones chaos broke.</summary>
     public IReadOnlyList<TestFailure> FailedOnlyUnderChaos(TestResults baseline) =>
         Failed.Values.Where(f => baseline.Passed.Contains(f.Name)).OrderBy(f => f.Name, StringComparer.Ordinal).ToList();
+
+    /// <summary>Tests that passed in <paramref name="baseline"/> but have no result here, usually because chaos crashed their test process.</summary>
+    public IReadOnlyList<string> MissingUnderChaos(TestResults baseline) =>
+        baseline.Passed.Where(name => !Passed.Contains(name) && !Failed.ContainsKey(name)).Order(StringComparer.Ordinal).ToList();
 }

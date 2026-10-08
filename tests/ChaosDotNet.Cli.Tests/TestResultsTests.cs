@@ -32,6 +32,15 @@ public sealed class TestResultsTests
         Assert.Equal(["B"], chaos.FailedOnlyUnderChaos(baseline).Select(f => f.Name));
     }
 
+    [Fact]
+    public void Reports_tests_that_passed_clean_but_have_no_result_under_chaos()
+    {
+        var baseline = new TestResults(["A", "B", "C"], [Failure("D")]);
+        var chaos = new TestResults(["A"], [Failure("B")]);
+
+        Assert.Equal(["C"], chaos.MissingUnderChaos(baseline));
+    }
+
     private static TestFailure Failure(string name) => new(name, "Boom", "", At, At);
 
     private static string Trx(params (string Name, string Outcome)[] tests) =>

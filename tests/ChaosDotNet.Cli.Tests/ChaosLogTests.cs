@@ -8,6 +8,9 @@ public sealed class ChaosLogTests
         [
             new LoggedIncident(1, At.AddSeconds(-10), At.AddSeconds(-5), 1.0, [new ChaosIncidentFault("http", "Latency", MonkeyFaultKind.Slowness)]),
             new LoggedIncident(2, At.AddSeconds(1), At.AddSeconds(4), 0.43, [new ChaosIncidentFault("sql", "ConnectionFailure", MonkeyFaultKind.Outage)]),
+
+            // The same incident from a second test process, whose monkey started a little later.
+            new LoggedIncident(2, At.AddSeconds(1.2), At.AddSeconds(4.2), 0.43, [new ChaosIncidentFault("sql", "ConnectionFailure", MonkeyFaultKind.Outage)]),
         ],
         [
             new LoggedFault(At.AddSeconds(-6), "http", "Latency", "GET", "/pay"),
@@ -30,7 +33,7 @@ public sealed class ChaosLogTests
         Assert.Contains("ChaosDbException : A transport-level error has occurred.", text);
         Assert.DoesNotContain("more", text);
         Assert.Contains("injected fault reached the test", text);
-        Assert.Contains("#2 sql ConnectionFailure on 43 % of calls", text);
+        Assert.Single(text.Split('\n'), line => line.Contains("#2 sql ConnectionFailure on 43 % of calls", StringComparison.Ordinal));
         Assert.Contains("sql ConnectionFailure (#2) x2 on Open", text);
         Assert.DoesNotContain("Latency", text);
     }

@@ -1,14 +1,13 @@
 using System.Globalization;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
-using ChaosDotNet;
 using ChaosDotNet.Cli;
-using ChaosDotNet.Factories;
 
 /// <summary>
-/// Loaded into each test process through <c>DOTNET_STARTUP_HOOKS</c> by <c>dotnet chaos test</c>. Starts a monkey with the
-/// seed the CLI chose and patches the process so every HTTP and database call goes through it.
+/// Loaded into each test process through <c>DOTNET_STARTUP_HOOKS</c> by <c>dotnet chaos test</c>. Loads the tool into its own
+/// <see cref="AssemblyLoadContext"/>, so its ChaosDotNet and Harmony never clash with versions the app or tests reference,
+/// then starts <see cref="Agent"/> there. Framework types such as <c>HttpMessageHandler</c> and <c>DbCommand</c> are shared,
+/// so the patches still reach the app's calls.
 /// </summary>
 internal static class StartupHook
 {
@@ -24,36 +23,17 @@ internal static class StartupHook
             return;
         }
 
-        var folder = Path.GetDirectoryName(typeof(StartupHook).Assembly.Location)!;
-        AssemblyLoadContext.Default.Resolving += (context, name) =>
-            Path.Combine(folder, name.Name + ".dll") is var path && File.Exists(path) ? context.LoadFromAssemblyPath(path) : null;
-
-        Start(int.Parse(seed, CultureInfo.InvariantCulture));
+        var tool = new ToolLoadContext(Path.GetDirectoryName(typeof(StartupHook).Assembly.Location)!);
+        tool.LoadFromAssemblyPath(typeof(StartupHook).Assembly.Location)
+            .GetType(typeof(Agent).FullName!, throwOnError: true)!
+            .GetMethod(nameof(Agent.Start), BindingFlags.Public | BindingFlags.Static)!
+            .Invoke(null, [int.Parse(seed, CultureInfo.InvariantCulture)]);
     }
 
-    // Kept out of Initialize so ChaosDotNet and Harmony load only after the resolver above is in place.
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void Start(int seed)
+    /// <summary>Loads every assembly found in the tool's folder from there; the rest, the framework, comes from the default context.</summary>
+    private sealed class ToolLoadContext(string folder) : AssemblyLoadContext("ChaosDotNet.Cli")
     {
-        var intensity = Enum.Parse<ChaosIntensity>(Environment.GetEnvironmentVariable(Runner.IntensityVariable) ?? nameof(ChaosIntensity.High), ignoreCase: true);
-        var monkey = new ChaosMonkey(seed: seed, options: new ChaosMonkeyOptions { Duration = TimeSpan.FromHours(1), Intensity = intensity });
-        var http = new HttpFactory(monkey).Named("http");
-        var sql = new SqlFactory(monkey).Named("sql");
-        monkey.Start();
-        Interceptors.Install(http, sql);
-
-        if (Environment.GetEnvironmentVariable(Runner.OutputVariable) is { } output)
-        {
-            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
-            {
-                var started = monkey.StartedAt!.Value;
-                new ChaosLog(
-                    [.. monkey.Plan.Incidents.Select(i => new LoggedIncident(i.Number, started + i.Start, started + i.End, i.Rate, i.Faults))],
-                    [.. new[] { http.Engine, sql.Engine }.SelectMany(e => e.Log
-                        .Where(l => l.Kind == ChaosEventKind.FaultInjected)
-                        .Select(l => new LoggedFault(l.Timestamp, e.Name, l.Fault!, l.Operation, l.Details)))])
-                    .Write(Path.Combine(output, Environment.ProcessId + ChaosLog.Extension));
-            };
-        }
+        protected override Assembly? Load(AssemblyName name) =>
+            Path.Combine(folder, name.Name + ".dll") is var path && File.Exists(path) ? LoadFromAssemblyPath(path) : null;
     }
 }

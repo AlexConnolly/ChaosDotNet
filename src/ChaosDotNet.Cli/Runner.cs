@@ -100,8 +100,20 @@ internal static class Runner
             }
 
             var failed = results.FailedOnlyUnderChaos(baseline);
+            var missing = results.MissingUnderChaos(baseline);
             var log = ChaosLog.Read(folder);
             reports.Add($"Seed {seed}: {failed.Count} test(s) failed only under chaos. Faults injected: {log.Totals()}.");
+            if (missing.Count > 0)
+            {
+                reports.Add($"  {missing.Count} test(s) passed without chaos but have no result with it. Their test process probably crashed; see its output above:");
+                reports.AddRange(missing.Select(name => "    " + name));
+                foreach (var name in missing)
+                {
+                    broken.TryAdd(name, []);
+                    broken[name].Add(seed);
+                }
+            }
+
             foreach (var failure in failed)
             {
                 reports.Add($"  FAILED {failure.Name}");

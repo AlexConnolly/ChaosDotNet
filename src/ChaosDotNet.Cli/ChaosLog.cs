@@ -37,7 +37,12 @@ internal sealed record ChaosLog(IReadOnlyList<LoggedIncident> Incidents, IReadOn
             ? "Cause: an injected fault reached the test without being handled."
             : "Cause: the test failed on its own assertion or error; a fault below changed what the code did.";
 
-        var incidents = Incidents.Where(i => i.Start < failure.End && i.End > failure.Start).OrderBy(i => i.Start).ToList();
+        // Each test process runs its own monkey with the same seed, so the same incident arrives once per process.
+        var incidents = Incidents.Where(i => i.Start < failure.End && i.End > failure.Start)
+            .GroupBy(i => (i.Number, Faults: string.Join(',', i.Faults)))
+            .Select(g => g.First() with { Start = g.Min(i => i.Start), End = g.Max(i => i.End) })
+            .OrderBy(i => i.Start)
+            .ToList();
         if (incidents.Count == 0)
         {
             yield return "No incident was active while the test ran. An earlier fault may have left state behind.";
