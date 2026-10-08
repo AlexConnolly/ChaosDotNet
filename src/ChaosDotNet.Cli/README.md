@@ -47,7 +47,15 @@ Tests that run in parallel share one monkey, so a fault in a test's window may h
 | `--seed <seed>` | One seed, to reproduce a failure. |
 | `--intensity low\|medium\|high` | How much chaos. Defaults to `high`, so short suites see faults. |
 
-Every other option goes to `dotnet test`.
+Every other option goes to `dotnet test`, so the usual filters pick which tests run, in both the clean run and the chaos runs:
+
+```shell
+# xunit.v3 on Microsoft.Testing.Platform: a namespace and everything below it
+dotnet chaos test --filter-namespace "MyApp.Tests.Orders*"
+
+# VSTest (xunit v2, NUnit, MSTest)
+dotnet chaos test --filter "FullyQualifiedName~MyApp.Tests.Orders."
+```
 
 ## Limits
 
