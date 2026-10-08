@@ -44,9 +44,16 @@ internal static class StartupHook
 
         if (Environment.GetEnvironmentVariable(Runner.OutputVariable) is { } output)
         {
-            AppDomain.CurrentDomain.ProcessExit += (_, _) => File.WriteAllLines(
-                Path.Combine(output, $"{Environment.ProcessId}.faults"),
-                [.. new[] { http.Engine, sql.Engine }.Select(e => $"{e.Name} {e.Log.Count(l => l.Kind == ChaosEventKind.FaultInjected)}")]);
+            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+            {
+                var started = monkey.StartedAt!.Value;
+                new ChaosLog(
+                    [.. monkey.Plan.Incidents.Select(i => new LoggedIncident(i.Number, started + i.Start, started + i.End, i.Rate, i.Faults))],
+                    [.. new[] { http.Engine, sql.Engine }.SelectMany(e => e.Log
+                        .Where(l => l.Kind == ChaosEventKind.FaultInjected)
+                        .Select(l => new LoggedFault(l.Timestamp, e.Name, l.Fault!, l.Operation, l.Details)))])
+                    .Write(Path.Combine(output, Environment.ProcessId + ChaosLog.Extension));
+            };
         }
     }
 }

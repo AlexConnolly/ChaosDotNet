@@ -8,14 +8,30 @@ dotnet chaos test --runs 5 --filter "Category=Orders"
 ```
 
 ```
-dotnet-chaos: baseline 120 passed, 0 failed
-dotnet-chaos: seed 1: 2 failed only under chaos; faults injected: http 14, sql 31
-...
-dotnet-chaos: 2 test(s) pass without chaos but fail under it:
-  Orders.Tests.CheckoutTests.Order_is_saved_after_payment  (seeds 1, 4)
-  Orders.Tests.StockTests.Reservation_is_released  (seeds 1)
+Seed 1: 1 test(s) failed only under chaos. Faults injected: http 14, sql 31.
+  FAILED Orders.Tests.CheckoutTests.Order_is_saved_after_payment
+    Error: ChaosDotNet.Factories.ChaosDbException : A transport-level error has occurred.
+    Cause: an injected fault reached the test without being handled.
+    Infra while it ran (09:59:39.978 to 09:59:40.876):
+      #1 sql ConnectionFailure on 26 % of calls, 09:59:38.847 to 09:59:41.047
+      #1 http Latency on all calls, 09:59:38.847 to 09:59:41.047
+    Calls broken:
+      sql ConnectionFailure (#1) x1 on ExecuteNonQuery: INSERT INTO "Orders" ...
+Report: /tmp/dotnet-chaos-qquxcj3d/report.txt
+
+dotnet-chaos: 1 test(s) pass without chaos but fail under it:
+  Orders.Tests.CheckoutTests.Order_is_saved_after_payment  (seeds 1)
 Reproduce: dotnet chaos test --seed 1 --intensity high --filter Category=Orders
 ```
+
+Each failure shows:
+
+- **Error**: the first line of the test's failure message.
+- **Cause**: whether an injected fault reached the test unhandled, or the test failed on its own assertion after a fault changed what the code did.
+- **Infra while it ran**: every incident active in the test's time window, with the fault and the share of calls it broke.
+- **Calls broken**: the calls the monkey broke in that window, grouped by fault and operation, with the SQL or HTTP path.
+
+Tests that run in parallel share one monkey, so a fault in a test's window may have hit another test's call.
 
 ## What it does
 
@@ -23,7 +39,7 @@ Reproduce: dotnet chaos test --seed 1 --intensity high --filter Category=Orders
 2. Runs it once per seed with a startup hook (`DOTNET_STARTUP_HOOKS`) in every test process. The hook starts a `ChaosMonkey` with that seed and patches the process at run time:
    - every `SocketsHttpHandler`, so every `HttpClient` and `IHttpClientFactory` client that reaches the network (dependency `http`);
    - every ADO.NET `DbConnection` and `DbCommand` (dependency `sql`): SqlClient, Npgsql, SQLite, MySQL, EF Core, Dapper.
-3. Compares TRX results and lists tests that passed without chaos but failed with it. Exit code 1 if there are any.
+3. Compares TRX results. For each test that passed without chaos but failed with it, it prints the error and the state of the infrastructure while the test ran, and writes it all to `report.txt`. Exit code 1 if there are any.
 
 | Option | Meaning |
 | --- | --- |

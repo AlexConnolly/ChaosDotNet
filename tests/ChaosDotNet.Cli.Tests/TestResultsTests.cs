@@ -2,8 +2,10 @@ namespace ChaosDotNet.Cli.Tests;
 
 public sealed class TestResultsTests
 {
+    private static readonly DateTimeOffset At = new(2026, 10, 8, 9, 0, 0, TimeSpan.Zero);
+
     [Fact]
-    public void Reads_outcomes_from_every_trx_file_in_a_folder()
+    public void Reads_outcomes_and_failures_from_every_trx_file_in_a_folder()
     {
         var folder = Directory.CreateTempSubdirectory().FullName;
         File.WriteAllText(Path.Combine(folder, "a.trx"), Trx(("Orders.Places", "Passed"), ("Orders.Refunds", "Failed")));
@@ -13,24 +15,35 @@ public sealed class TestResultsTests
         var results = TestResults.Read(folder);
 
         Assert.Equal(["Orders.Places", "Stock.Reserves"], results.Passed.Order());
-        Assert.Equal(["Orders.Refunds"], results.Failed);
+        var failure = Assert.Single(results.Failed).Value;
+        Assert.Equal("Orders.Refunds", failure.Name);
+        Assert.Equal("Boom", failure.Message);
+        Assert.Contains("at Orders.Refunds()", failure.StackTrace);
+        Assert.Equal(At, failure.Start);
+        Assert.Equal(At.AddSeconds(2), failure.End);
     }
 
     [Fact]
     public void Reports_tests_that_pass_clean_but_fail_under_chaos()
     {
-        var baseline = new TestResults(["A", "B", "C"], ["D"]);
-        var chaos = new TestResults(["A"], ["B", "D", "E"]);
+        var baseline = new TestResults(["A", "B", "C"], [Failure("D")]);
+        var chaos = new TestResults(["A"], [Failure("B"), Failure("D"), Failure("E")]);
 
-        Assert.Equal(["B"], chaos.FailedOnlyUnderChaos(baseline));
+        Assert.Equal(["B"], chaos.FailedOnlyUnderChaos(baseline).Select(f => f.Name));
     }
+
+    private static TestFailure Failure(string name) => new(name, "Boom", "", At, At);
 
     private static string Trx(params (string Name, string Outcome)[] tests) =>
         $"""
         <?xml version="1.0" encoding="utf-8"?>
         <TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
           <Results>
-            {string.Concat(tests.Select(t => $"<UnitTestResult testName=\"{t.Name}\" outcome=\"{t.Outcome}\" />"))}
+            {string.Concat(tests.Select(t => $"""
+              <UnitTestResult testName="{t.Name}" outcome="{t.Outcome}" startTime="{At:O}" endTime="{At.AddSeconds(2):O}">
+                <Output><ErrorInfo><Message>Boom</Message><StackTrace>   at {t.Name}()</StackTrace></ErrorInfo></Output>
+              </UnitTestResult>
+              """))}
           </Results>
         </TestRun>
         """;

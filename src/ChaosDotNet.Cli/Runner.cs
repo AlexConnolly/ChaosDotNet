@@ -87,6 +87,7 @@ internal static class Runner
         Console.WriteLine($"dotnet-chaos: baseline {baseline.Passed.Count} passed, {baseline.Failed.Count} failed");
         var noBuild = testArgs.Contains("--no-build") ? testArgs : [.. testArgs, "--no-build"];
         var broken = new SortedDictionary<string, List<int>>(StringComparer.Ordinal);
+        var reports = new List<string>();
         foreach (var seed in seeds)
         {
             var folder = Path.Combine(root, $"seed-{seed}");
@@ -99,14 +100,27 @@ internal static class Runner
             }
 
             var failed = results.FailedOnlyUnderChaos(baseline);
-            Console.WriteLine($"dotnet-chaos: seed {seed}: {failed.Count} failed only under chaos; faults injected: {Faults(folder)}");
-            foreach (var test in failed)
+            var log = ChaosLog.Read(folder);
+            reports.Add($"Seed {seed}: {failed.Count} test(s) failed only under chaos. Faults injected: {log.Totals()}.");
+            foreach (var failure in failed)
             {
-                broken.TryAdd(test, []);
-                broken[test].Add(seed);
+                reports.Add($"  FAILED {failure.Name}");
+                reports.AddRange(log.Explain(failure).Select(line => "    " + line));
+                broken.TryAdd(failure.Name, []);
+                broken[failure.Name].Add(seed);
             }
         }
 
+        if (broken.Count > 0)
+        {
+            reports.Add("Tests in parallel share the monkey, so a fault in a test's time window may have hit another test's call.");
+        }
+
+        var report = Path.Combine(root, "report.txt");
+        File.WriteAllLines(report, reports);
+        Console.WriteLine();
+        reports.ForEach(Console.WriteLine);
+        Console.WriteLine($"Report: {report}");
         Console.WriteLine();
         if (broken.Count == 0)
         {
@@ -170,14 +184,4 @@ internal static class Runner
         return ["--logger", "trx"];
     }
 
-    private static string Faults(string folder)
-    {
-        var totals = Directory.EnumerateFiles(folder, "*.faults")
-            .SelectMany(File.ReadAllLines)
-            .Select(line => line.Split(' '))
-            .GroupBy(parts => parts[0], parts => int.Parse(parts[1], CultureInfo.InvariantCulture))
-            .Select(g => $"{g.Key} {g.Sum()}")
-            .ToList();
-        return totals.Count == 0 ? "none recorded" : string.Join(", ", totals);
-    }
 }

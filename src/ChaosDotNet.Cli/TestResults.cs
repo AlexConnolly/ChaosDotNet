@@ -2,11 +2,14 @@ using System.Xml.Linq;
 
 namespace ChaosDotNet.Cli;
 
-/// <summary>The names of the tests that passed and failed in one run, read from its TRX files.</summary>
-internal sealed record TestResults(IReadOnlySet<string> Passed, IReadOnlySet<string> Failed)
+/// <summary>A failed test, as its TRX file reports it.</summary>
+internal sealed record TestFailure(string Name, string Message, string StackTrace, DateTimeOffset Start, DateTimeOffset End);
+
+/// <summary>The tests that passed and failed in one run, read from its TRX files.</summary>
+internal sealed record TestResults(IReadOnlySet<string> Passed, IReadOnlyDictionary<string, TestFailure> Failed)
 {
-    public TestResults(IEnumerable<string> passed, IEnumerable<string> failed)
-        : this(passed.ToHashSet(), failed.ToHashSet())
+    public TestResults(IEnumerable<string> passed, IEnumerable<TestFailure> failed)
+        : this(passed.ToHashSet(), failed.DistinctBy(f => f.Name).ToDictionary(f => f.Name))
     {
     }
 
@@ -15,15 +18,22 @@ internal sealed record TestResults(IReadOnlySet<string> Passed, IReadOnlySet<str
         var results = Directory.Exists(folder)
             ? Directory.EnumerateFiles(folder, "*.trx", SearchOption.AllDirectories)
                 .SelectMany(file => XDocument.Load(file).Descendants().Where(e => e.Name.LocalName == "UnitTestResult"))
-                .Select(e => (Name: (string?)e.Attribute("testName") ?? "", Outcome: (string?)e.Attribute("outcome")))
                 .ToList()
             : [];
         return new TestResults(
-            results.Where(r => r.Outcome == "Passed").Select(r => r.Name),
-            results.Where(r => r.Outcome == "Failed").Select(r => r.Name));
+            results.Where(e => (string?)e.Attribute("outcome") == "Passed").Select(e => (string?)e.Attribute("testName") ?? ""),
+            results.Where(e => (string?)e.Attribute("outcome") == "Failed").Select(e => new TestFailure(
+                (string?)e.Attribute("testName") ?? "",
+                Child(e, "Message"),
+                Child(e, "StackTrace"),
+                (DateTimeOffset?)e.Attribute("startTime") ?? default,
+                (DateTimeOffset?)e.Attribute("endTime") ?? default)));
+
+        static string Child(XElement result, string name) =>
+            result.Descendants().FirstOrDefault(e => e.Name.LocalName == name)?.Value ?? "";
     }
 
     /// <summary>Tests that failed here but passed in <paramref name="baseline"/>: the ones chaos broke.</summary>
-    public IReadOnlyList<string> FailedOnlyUnderChaos(TestResults baseline) =>
-        Failed.Where(baseline.Passed.Contains).Order(StringComparer.Ordinal).ToList();
+    public IReadOnlyList<TestFailure> FailedOnlyUnderChaos(TestResults baseline) =>
+        Failed.Values.Where(f => baseline.Passed.Contains(f.Name)).OrderBy(f => f.Name, StringComparer.Ordinal).ToList();
 }
