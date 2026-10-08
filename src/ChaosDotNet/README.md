@@ -291,3 +291,14 @@ Coverage is kept per test assembly: each test run replaces that assembly's previ
 ## Your own factory
 
 Derive from `ChaosFactory<TSelf, TCall>`. In the veneer, call `Engine.RunAsync(call, realCall)`, or `Engine.BeforeCallAsync(call)` to handle your own fault types. Add faults as extension methods on `WindowBuilder<TSelf, TCall>` that call `Inject(fault)`, and override `DefaultMonkeyFaults()` to give the monkey a catalogue. `HttpFactory` is a short example.
+
+## Run your existing tests under chaos
+
+This package includes the `dotnet chaos test` runner as an MSBuild target. From a test project that references it:
+
+```shell
+dotnet build -t:ChaosTest -p:ChaosRuns=5
+```
+
+It runs the tests once without chaos, then once per seed with a monkey patched into every `HttpClient` and ADO.NET connection, and reports the tests that only fail under chaos with the faults active at the time. See [ChaosDotNet.Cli](https://www.nuget.org/packages/ChaosDotNet.Cli) for the options.
+

@@ -21,6 +21,14 @@ dotnet tool install --global ChaosDotNet.Cli --prerelease
 
 `--prerelease` is needed while versions end in `-preview`. Update with `dotnet tool update ChaosDotNet.Cli --prerelease` (add `--global` for a global install).
 
+Or, with no tool install: a test project that references the `ChaosDotNet` package already has the runner, as an MSBuild target:
+
+```shell
+dotnet build -t:ChaosTest -p:ChaosRuns=5 -p:ChaosArgs="--filter-namespace MyApp.Tests.Orders*"
+```
+
+`ChaosRuns`, `ChaosSeed` and `ChaosIntensity` match the tool's options; `ChaosArgs` goes to `dotnet test`. Run it on a test project, not a solution.
+
 ## Run
 
 ```shell

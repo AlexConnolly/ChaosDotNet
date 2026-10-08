@@ -1,13 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Chaotic veneers over infrastructure clients for .NET tests. Build an HttpClient (or any interface) that follows a timeline of faults: freeze for 10 seconds, fail the next 3 calls, add latency every 30 seconds.</Description>
+    <Description>Chaotic veneers over infrastructure clients for .NET tests. Build an HttpClient (or any interface) that follows a timeline of faults: freeze for 10 seconds, fail the next 3 calls, add latency every 30 seconds. Includes the dotnet chaos test runner as the ChaosTest MSBuild target.</Description>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackChaosRunner</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="ChaosDotNet.Tests" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+    <None Include="buildTransitive\ChaosDotNet.targets" Pack="true" PackagePath="buildTransitive\" />
   </ItemGroup>
+
+  <!--
+    ChaosDotNet.Cli references this project, so it cannot be a ProjectReference here. Its build output is packed as is:
+    build the solution (or ChaosDotNet.Cli) before packing.
+  -->
+  <Target Name="PackChaosRunner" Condition="'$(TargetFramework)' == 'net8.0'">
+    <PropertyGroup>
+      <_ChaosRunnerFolder>$(MSBuildThisFileDirectory)..\ChaosDotNet.Cli\bin\$(Configuration)\net8.0\</_ChaosRunnerFolder>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_ChaosRunnerFolder)ChaosDotNet.Cli.dll')" Text="Build ChaosDotNet.Cli ($(Configuration)) before packing ChaosDotNet: its output goes into tools/chaos." />
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(_ChaosRunnerFolder)*.dll;$(_ChaosRunnerFolder)*.json" PackagePath="tools/chaos/" />
+    </ItemGroup>
+  </Target>
 
 </Project>
