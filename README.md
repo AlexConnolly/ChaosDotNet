@@ -60,11 +60,11 @@ Use a factory without a monkey to script the chaos instead, or `new ChaosSubject
 ## Or run the tests you already have under chaos
 
 ```shell
-dotnet tool install --global ChaosDotNet.Cli
+dotnet tool install --global ChaosDotNet.Cli --prerelease
 dotnet chaos test --runs 5
 ```
 
-It runs `dotnet test` once clean, then once per seed with a monkey patched into every `HttpClient` and ADO.NET connection in the test process, and lists the tests that only fail under chaos. See the [CLI README](src/ChaosDotNet.Cli/README.md).
+It runs `dotnet test` once clean, then once per seed with a monkey patched into every `HttpClient` and ADO.NET connection in the test process, and lists the tests that only fail under chaos, each with its error and the faults active while it ran. It is a separate .NET tool, not part of the library packages; your test projects need no reference. Install it per repo with a tool manifest, or globally. See the [CLI README](src/ChaosDotNet.Cli/README.md).
 
 ## Why
 

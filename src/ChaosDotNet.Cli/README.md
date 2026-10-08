@@ -2,9 +2,29 @@
 
 `dotnet chaos test` runs the test suite you already have with a chaos monkey inside it. No test changes.
 
+## Install
+
+It is a separate package from the libraries: a [.NET tool](https://learn.microsoft.com/dotnet/core/tools/global-tools). Your test projects do not need to reference anything.
+
+For one repo, so everyone on the team and CI get the same version (recommended):
+
 ```shell
-dotnet tool install --global ChaosDotNet.Cli
-dotnet chaos test --runs 5 --filter "Category=Orders"
+dotnet new tool-manifest            # once per repo; commit the dotnet-tools.json it creates
+dotnet tool install ChaosDotNet.Cli --prerelease
+```
+
+Others then run `dotnet tool restore`. Or, for every repo on your machine:
+
+```shell
+dotnet tool install --global ChaosDotNet.Cli --prerelease
+```
+
+`--prerelease` is needed while versions end in `-preview`. Update with `dotnet tool update ChaosDotNet.Cli --prerelease` (add `--global` for a global install).
+
+## Run
+
+```shell
+dotnet chaos test --runs 5 --filter-namespace "MyApp.Tests.Orders*"
 ```
 
 ```
