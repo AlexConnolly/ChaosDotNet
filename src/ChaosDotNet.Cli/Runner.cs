@@ -13,16 +13,18 @@ internal static class Runner
     public const string SeedVariable = "CHAOS_CLI_SEED";
     public const string IntensityVariable = "CHAOS_CLI_INTENSITY";
     public const string OutputVariable = "CHAOS_CLI_OUT";
+    public const string ServicesVariable = "CHAOS_CLI_SERVICES";
 
     private const string Usage = """
-        Usage: dotnet chaos test [--runs <n>] [--seed <seed>] [--intensity low|medium|high] [dotnet test options]
+        Usage: dotnet chaos test [--runs <n>] [--seed <seed>] [--intensity low|medium|high] [--services] [dotnet test options]
 
         Runs your tests once without chaos, then once per seed with a chaos monkey inside every HttpClient
-        (SocketsHttpHandler) and ADO.NET connection and command. Reports tests that only fail under chaos.
+        (SocketsHttpHandler), ADO.NET connection and command, and TCP socket. Reports tests that only fail under chaos.
 
           --runs <n>        Seeds 1 to n. Defaults to 5.
           --seed <seed>     One seed, to reproduce a failure.
           --intensity <i>   low, medium or high. Defaults to high.
+          --services        Also break the app's own interfaces in every DI container (not Microsoft.* or System.*).
 
         Every other option goes to dotnet test, for example --filter or --project.
         """;
@@ -37,6 +39,7 @@ internal static class Runner
 
         var seeds = Enumerable.Range(1, 5).ToList();
         var intensity = "high";
+        var services = false;
         var testArgs = new List<string>();
         for (var i = 0; i < rest.Length; i++)
         {
@@ -50,6 +53,9 @@ internal static class Runner
                     break;
                 case "--intensity" when i + 1 < rest.Length:
                     intensity = rest[++i];
+                    break;
+                case "--services":
+                    services = true;
                     break;
                 case "--help" or "-h":
                     Console.WriteLine(Usage);
@@ -92,7 +98,7 @@ internal static class Runner
         {
             var folder = Path.Combine(root, $"seed-{seed}");
             Console.WriteLine($"dotnet-chaos: seed {seed}");
-            var results = Test(noBuild, folder, trx, (seed, intensity));
+            var results = Test(noBuild, folder, trx, (seed, intensity, services));
             if (results.Passed.Count + results.Failed.Count == 0)
             {
                 Console.Error.WriteLine($"dotnet-chaos: seed {seed} wrote no test results. The test process may have crashed; see the output above.");
@@ -147,7 +153,7 @@ internal static class Runner
             Console.WriteLine($"  {test}  (seeds {string.Join(", ", failedSeeds)})");
         }
 
-        Console.WriteLine($"Reproduce: dotnet chaos test --seed {broken.First().Value[0]} --intensity {intensity} {string.Join(' ', testArgs)}".TrimEnd());
+        Console.WriteLine($"Reproduce: dotnet chaos test --seed {broken.First().Value[0]} --intensity {intensity}{(services ? " --services" : "")} {string.Join(' ', testArgs)}".TrimEnd());
         return 1;
     }
 
@@ -168,7 +174,7 @@ internal static class Runner
     private static readonly string[] MtpTrx = ["--report-trx"];
     private static readonly string[] XunitTrx = ["--report-xunit-trx"];
 
-    private static TestResults Test(IEnumerable<string> testArgs, string folder, string[] trx, (int Seed, string Intensity)? chaos)
+    private static TestResults Test(IEnumerable<string> testArgs, string folder, string[] trx, (int Seed, string Intensity, bool Services)? chaos)
     {
         Directory.CreateDirectory(folder);
         var start = new ProcessStartInfo("dotnet") { UseShellExecute = false };
@@ -184,6 +190,7 @@ internal static class Runner
             start.Environment["DOTNET_STARTUP_HOOKS"] = string.IsNullOrEmpty(hooks) ? hook : $"{hooks}{Path.PathSeparator}{hook}";
             start.Environment[SeedVariable] = c.Seed.ToString(CultureInfo.InvariantCulture);
             start.Environment[IntensityVariable] = c.Intensity;
+            start.Environment[ServicesVariable] = c.Services ? "1" : null;
             start.Environment[OutputVariable] = folder;
         }
 

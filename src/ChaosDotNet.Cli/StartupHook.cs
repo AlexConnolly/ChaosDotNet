@@ -30,10 +30,33 @@ internal static class StartupHook
             .Invoke(null, [int.Parse(seed, CultureInfo.InvariantCulture)]);
     }
 
-    /// <summary>Loads every assembly found in the tool's folder from there; the rest, the framework, comes from the default context.</summary>
+    /// <summary>
+    /// ChaosDotNet and Harmony always load from the tool's folder. Other libraries, such as Microsoft.Extensions.DependencyInjection,
+    /// come from the app when it has a compatible version, so the tool sees the app's own types (its <c>IServiceCollection</c>),
+    /// and from the tool's folder otherwise.
+    /// </summary>
     private sealed class ToolLoadContext(string folder) : AssemblyLoadContext("ChaosDotNet.Cli")
     {
-        protected override Assembly? Load(AssemblyName name) =>
-            Path.Combine(folder, name.Name + ".dll") is var path && File.Exists(path) ? LoadFromAssemblyPath(path) : null;
+        protected override Assembly? Load(AssemblyName name)
+        {
+            var path = Path.Combine(folder, name.Name + ".dll");
+            if (!File.Exists(path))
+            {
+                return null;
+            }
+
+            if (!name.Name!.StartsWith("ChaosDotNet", StringComparison.Ordinal) && name.Name != "0Harmony")
+            {
+                try
+                {
+                    return Default.LoadFromAssemblyName(name);
+                }
+                catch (IOException)
+                {
+                }
+            }
+
+            return LoadFromAssemblyPath(path);
+        }
     }
 }

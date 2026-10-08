@@ -2,7 +2,7 @@
   <!--
     Runs this test project the way the dotnet chaos test tool does, with the runner bundled in this package:
     dotnet build -t:ChaosTest
-    Optional properties: ChaosRuns, ChaosSeed, ChaosIntensity, and ChaosArgs for options passed on to dotnet test.
+    Optional properties: ChaosRuns, ChaosSeed, ChaosIntensity, ChaosServices (true), and ChaosArgs for options passed on to dotnet test.
   -->
   <Target Name="ChaosTest">
     <PropertyGroup>
@@ -10,6 +10,7 @@
       <_ChaosCommand Condition="'$(ChaosRuns)' != ''">$(_ChaosCommand) --runs $(ChaosRuns)</_ChaosCommand>
       <_ChaosCommand Condition="'$(ChaosSeed)' != ''">$(_ChaosCommand) --seed $(ChaosSeed)</_ChaosCommand>
       <_ChaosCommand Condition="'$(ChaosIntensity)' != ''">$(_ChaosCommand) --intensity $(ChaosIntensity)</_ChaosCommand>
+      <_ChaosCommand Condition="'$(ChaosServices)' == 'true'">$(_ChaosCommand) --services</_ChaosCommand>
     </PropertyGroup>
     <Exec Command="$(_ChaosCommand) $(ChaosArgs)" WorkingDirectory="$(MSBuildProjectDirectory)" StandardOutputImportance="high" IgnoreStandardErrorWarningFormat="true" />
   </Target>

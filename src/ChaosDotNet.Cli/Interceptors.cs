@@ -8,10 +8,11 @@ using HarmonyLib;
 namespace ChaosDotNet.Cli;
 
 /// <summary>
-/// Patches every <see cref="SocketsHttpHandler"/> and every ADO.NET command and connection in the process, so calls go
-/// through the timelines of <see cref="Http"/> and <see cref="Sql"/> without the app or its tests changing.
+/// Patches every <see cref="SocketsHttpHandler"/>, every ADO.NET command and connection, and every TCP socket in the process,
+/// so calls go through the timelines of <see cref="Http"/>, <see cref="Sql"/> and <see cref="Tcp"/> without the app or its
+/// tests changing.
 /// </summary>
-internal static class Interceptors
+internal static partial class Interceptors
 {
     private const BindingFlags Declared = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
 
@@ -27,17 +28,21 @@ internal static class Interceptors
 
     private static SqlFactory? Sql { get; set; }
 
+    private static SocketFactory? Tcp { get; set; }
+
     /// <summary>Points the patches at new factories. Patches the process on the first call.</summary>
-    public static void Install(HttpFactory http, SqlFactory sql)
+    public static void Install(HttpFactory http, SqlFactory sql, SocketFactory tcp)
     {
         lock (Patched)
         {
             Http = http;
             Sql = sql;
+            Tcp = tcp;
             Veneers.Clear();
             if (Patched.Add(typeof(SocketsHttpHandler)))
             {
                 Patch(typeof(SocketsHttpHandler), "SendAsync", nameof(SendAsync), typeof(HttpRequestMessage), typeof(CancellationToken));
+                PatchSockets();
                 AppDomain.CurrentDomain.AssemblyLoad += (_, e) => PatchDatabaseTypes(e.LoadedAssembly);
                 foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
                 {

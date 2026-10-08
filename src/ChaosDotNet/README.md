@@ -300,5 +300,5 @@ This package includes the `dotnet chaos test` runner as an MSBuild target. From 
 dotnet build -t:ChaosTest -p:ChaosRuns=5
 ```
 
-It runs the tests once without chaos, then once per seed with a monkey patched into every `HttpClient` and ADO.NET connection, and reports the tests that only fail under chaos with the faults active at the time. See [ChaosDotNet.Cli](https://www.nuget.org/packages/ChaosDotNet.Cli) for the options.
+It runs the tests once without chaos, then once per seed with a monkey patched into every `HttpClient`, ADO.NET connection and TCP socket (add `-p:ChaosServices=true` for your own DI services), and reports the tests that only fail under chaos with the faults active at the time. See [ChaosDotNet.Cli](https://www.nuget.org/packages/ChaosDotNet.Cli) for the options.
 

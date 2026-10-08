@@ -64,7 +64,7 @@ dotnet tool install --global ChaosDotNet.Cli --prerelease
 dotnet chaos test --runs 5
 ```
 
-It runs `dotnet test` once clean, then once per seed with a monkey patched into every `HttpClient` and ADO.NET connection in the test process, and lists the tests that only fail under chaos, each with its error and the faults active while it ran. Install it as a .NET tool (per repo or globally), or skip the install: any test project that references `ChaosDotNet` can run `dotnet build -t:ChaosTest`. See the [CLI README](src/ChaosDotNet.Cli/README.md).
+It runs `dotnet test` once clean, then once per seed with a monkey patched into every `HttpClient`, ADO.NET connection (so EF Core and Dapper too) and TCP socket in the test process, and with `--services` into your own DI services, and lists the tests that only fail under chaos, each with its error and the faults active while it ran. Install it as a .NET tool (per repo or globally), or skip the install: any test project that references `ChaosDotNet` can run `dotnet build -t:ChaosTest`. See the [CLI README](src/ChaosDotNet.Cli/README.md).
 
 ## Why
 
