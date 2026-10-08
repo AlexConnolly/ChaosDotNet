@@ -128,6 +128,7 @@ internal static class Runner
             return 0;
         }
 
+        Console.WriteLine(Monkey);
         Console.WriteLine($"dotnet-chaos: {broken.Count} test(s) pass without chaos but fail under it:");
         foreach (var (test, failedSeeds) in broken)
         {
@@ -137,6 +138,20 @@ internal static class Runner
         Console.WriteLine($"Reproduce: dotnet chaos test --seed {broken.First().Value[0]} --intensity {intensity} {string.Join(' ', testArgs)}".TrimEnd());
         return 1;
     }
+
+    private const string Monkey = """
+               .--.  .-"     "-.  .--.
+              / .. \/  .-. .-.  \/ .. \
+             | |  '|  /   Y   \  |'  | |
+             | \   \  \ 0 | 0 /  /   / |
+              \ '- ,\.-"`` ``"-./, -' /
+               `'-' /_   ^ ^   _\ '-'`
+                   |  \._   _./  |
+                   \   \ `~` /   /
+                    '._ '-=-' _.'
+                       '~---~'
+          The monkey wins again - mwuhahaha!
+        """;
 
     private static readonly string[] MtpTrx = ["--report-trx"];
     private static readonly string[] XunitTrx = ["--report-xunit-trx"];
