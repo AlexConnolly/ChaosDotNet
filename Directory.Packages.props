@@ -6,6 +6,7 @@
   <!-- Library dependencies: lowest supported versions, so consumers are free to go higher. -->
   <ItemGroup>
     <PackageVersion Include="Azure.Messaging.ServiceBus" Version="7.20.2" />
+    <PackageVersion Include="Lib.Harmony" Version="2.4.2" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.31" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />

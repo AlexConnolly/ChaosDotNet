@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>dotnet chaos test: runs your existing test suite with a chaos monkey inside every HttpClient and ADO.NET connection, no test changes needed. Reports the tests that pass normally but fail under chaos.</Description>
+    <PackageTags>$(PackageTags);cli;dotnet-tool</PackageTags>
+    <OutputType>Exe</OutputType>
+    <!-- One build serves as both the tool and the startup hook, so it must load into .NET 8 and .NET 10 test hosts. -->
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <RollForward>Major</RollForward>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dotnet-chaos</ToolCommandName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChaosDotNet\ChaosDotNet.csproj" />
+    <ProjectReference Include="..\ChaosDotNet.Sql\ChaosDotNet.Sql.csproj" />
+    <PackageReference Include="Lib.Harmony" />
+    <InternalsVisibleTo Include="ChaosDotNet.Cli.Tests" />
+  </ItemGroup>
+
+</Project>

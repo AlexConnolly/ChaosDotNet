@@ -57,6 +57,15 @@ await monkey.RunAsync(() => RunTheApp(connection, http, gateway));
 
 Use a factory without a monkey to script the chaos instead, or `new ChaosSubject<T>().Setup(...).Create(myInstance)` to override some methods and pass the rest to your instance.
 
+## Or run the tests you already have under chaos
+
+```shell
+dotnet tool install --global ChaosDotNet.Cli
+dotnet chaos test --runs 5
+```
+
+It runs `dotnet test` once clean, then once per seed with a monkey patched into every `HttpClient` and ADO.NET connection in the test process, and lists the tests that only fail under chaos. See the [CLI README](src/ChaosDotNet.Cli/README.md).
+
 ## Why
 
 Code that talks to databases, queues, caches and APIs usually has retry, timeout and fallback logic. That logic rarely runs in tests, because the dependencies never fail there. ChaosDotNet makes them fail: on a script you write, or at random like Netflix's Chaos Monkey, but from a seed, so every failure can be replayed.
@@ -93,6 +102,7 @@ Tests stay fast and repeatable: pass a `FakeTimeProvider` and a seed, and a 10-m
 | [`ChaosDotNet.AzureServiceBus`](https://www.nuget.org/packages/ChaosDotNet.AzureServiceBus) | Azure Service Bus senders, receivers, processors | [README](src/ChaosDotNet.AzureServiceBus/README.md) |
 | [`ChaosDotNet.Polly`](https://www.nuget.org/packages/ChaosDotNet.Polly) | A timeline inside a Polly v8 pipeline | [README](src/ChaosDotNet.Polly/README.md) |
 | [`ChaosDotNet.Xunit`](https://www.nuget.org/packages/ChaosDotNet.Xunit) | `[ChaosTheory]`: one xUnit test case per seed, with shrinking | [README](src/ChaosDotNet.Xunit/README.md) |
+| [`ChaosDotNet.Cli`](https://www.nuget.org/packages/ChaosDotNet.Cli) | `dotnet chaos test`: your existing tests, under chaos, no code changes | [README](src/ChaosDotNet.Cli/README.md) |
 
 All packages target .NET 8 and .NET 10. A full worked example is in [`samples/OrderService.Tests`](samples/OrderService.Tests).
 
